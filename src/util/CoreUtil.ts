@@ -1,5 +1,5 @@
 import { Option } from "@3fv/prelude-ts"
-import { Level, LevelName, LevelNames } from "./Types"
+import { Level, LevelName, LevelNames } from "../Types"
 import { flatten } from "lodash"
 import { isString } from "@3fv/guard"
 

@@ -11,7 +11,7 @@ import { identity } from "lodash"
 import { getConfig } from "../Config"
 import {Option} from "@3fv/prelude-ts"
 import {isDefined, isFunction} from "@3fv/guard"
-import { getThresholdValue } from "../Util"
+import { getThresholdValue } from "../util/CoreUtil"
 import { ok } from "assert"
 import { DefaultFormatter } from "../formatters/DefaultFormatter"
 
@@ -88,5 +88,6 @@ export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig
           this.write(entry, config)
   }
   
+  async close(): Promise<void> {}
   
 }

@@ -1,4 +1,4 @@
-import { warnLog, getProp, parseLogLevel, formatValue, getThresholdValue, pathToBasename } from "./Util"
+import { warnLog, getProp, parseLogLevel, formatValue, getThresholdValue, pathToBasename } from "./util/CoreUtil"
 import { Formatter, Level, Logger, LevelNames, Config, Category, Entry, Nullable, StackData } from "./Types"
 import { getConfig, setConfig } from "./Config"
 import {Option} from "@3fv/prelude-ts"

@@ -107,8 +107,11 @@ export interface Appender<AppenderConfig> {
   readonly id:string
   readonly type:string
   append:(entry:Entry, config:Config) => void
+  close:() => Promise<void>
+  
   setFormatter?:(formatter:Nullable<Formatter>) => void
   getFormatter?:() => Nullable<Formatter>
+  
 }
 
 

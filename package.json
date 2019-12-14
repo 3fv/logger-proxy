@@ -32,15 +32,19 @@
   "homepage": "https://github.com/3fv/logger#readme",
   "dependencies": {
     "@3fv/guard": "^1.0.15",
-    "@3fv/prelude-ts": "^0.8.12",
+    "@3fv/prelude-ts": "^0.8.13",
+    "bluebird": "^3.7.2",
     "chalk": "^3.0.0",
     "handlebars": "^4.5.3",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "mz": "^2.7.0"
   },
   "devDependencies": {
     "@types/jest": "^24.0.23",
     "@types/lodash": "^4.14.149",
+    "@types/mz": "^2.7.0",
     "@types/node": "^12.12.17",
+    "@types/shelljs": "^0.8.6",
     "del": "^5.1.0",
     "glob": "^7.1.6",
     "jest": "24.9.0",

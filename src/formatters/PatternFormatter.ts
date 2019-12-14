@@ -4,7 +4,7 @@ import * as moment from "moment"
 import * as chalk from "chalk"
 import { defaultsDeep, memoize, isEmpty, isError } from "lodash"
 import { inspect } from "util"
-import { buildString } from "../Util"
+import { buildString } from "../util/CoreUtil"
 
 export type PatternFormatterTemplateArgs = Omit<Entry, "timestamp"> & {
   timestamp: string

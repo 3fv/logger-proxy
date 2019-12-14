@@ -1,6 +1,6 @@
-import { AbstractAppender } from "./AbstractAppender"
-import { AppenderConfig, Config, Entry, Nullable } from "../Types"
-import { formatValue } from "../Util"
+import { AbstractAppender } from "../AbstractAppender"
+import { AppenderConfig, Config, Entry, Nullable } from "../../Types"
+import { formatValue } from "../../util/CoreUtil"
 
 
 export interface ConsoleAppenderConfig extends AppenderConfig {
