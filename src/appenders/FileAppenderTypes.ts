@@ -1,9 +1,7 @@
+import { AppenderConfig } from "../Types"
 
-export interface IFileAppenderConfig {
-  fileName:string;
-}
 
-export interface FileAppenderConfig {
+export interface FileAppenderConfig extends AppenderConfig {
   filename:string
   sync: boolean
 }

@@ -1,12 +1,10 @@
-/**
- * All log functions
- */
-import * as Log from './Logger'
 
 /**
  * Export all functions from ./log
  */
-export * from './Logger'
+
+
+export * from './Config'
 
 /**
  * Export all required types
@@ -14,20 +12,14 @@ export * from './Logger'
 export * from "./Types"
 
 /**
- * The default styler with chalk
+ * getLogger
  */
-export {styler as DefaultStyler} from './DefaultStyler'
+export * from "./Logger"
 
-
-/**
- * Shortcut to Log.create
- *
- * @type {function(string): ILogger}
- */
-export const getLogger = Log.create
 
 
 /**
  * By default export Log manager
  */
-export default Log
+import { getLogger } from "./Logger"
+export default getLogger

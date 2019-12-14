@@ -1,43 +1,105 @@
 import { Option } from "@3fv/prelude-ts"
+import { defaultsDeep } from "lodash"
 
 export type Nullable<T> = T | undefined | null
 
-export interface Category {
-  threshold:LogLevel
-  name:string
+export interface CategoryConfig {
+  appenderIds?: Nullable<string[]>
+  threshold?: Nullable<Level>
+}
+
+const defaultCategoryConfig: CategoryConfig = {
+  appenderIds: null,
+  threshold: null
+}
+
+export class Category {
+  
+  private static categories = new Map<string, Category>()
+  
+  static get(name: string): Category {
+    const {categories} = this
+    if (!categories.has(name)) {
+      categories.set(name,new Category(name))
+    }
+    
+    return this.categories.get(name)
+  }
+  
+  private readonly state:{
+    config: CategoryConfig
+  }
+  
+  get config(): CategoryConfig {
+    return this.state.config
+  }
+  
+  get threshold(): Level{
+    return this.state.config.threshold
+  }
+  
+  constructor(
+    readonly name:string,
+    config: Partial<CategoryConfig> = {}
+  ) {
+    this.state = {
+      config: defaultsDeep({...config}, defaultCategoryConfig)
+    }
+  }
+  
+  
+  
+  setConfig(newConfig: Partial<CategoryConfig>): this {
+    const {config} = this.state
+    Object.assign(this.state, {
+      config: defaultsDeep(newConfig, {...config})
+    })
+    
+    return this
+  }
+  
+  
 }
 
 export interface Config {
-  threshold:LogLevel
+  threshold:Level
   formatter:Formatter
-  categories:Category[]
   appenders:Appender<any>[]
+  
   stack:{
+    provider: StackDataProvider
+    root: string
     removeFrames:number  //Defaults to #
     enabled:boolean
   }
   
 }
 
-export type StackDataProviderFn = (event:Partial<Entry>, config:Config) => StackData
+export type StackDataProvider = (entry:Partial<Entry>, config:Config) => Nullable<StackData>
 
+export interface AppenderConfig {
+  threshold?: Nullable<Level>
+}
 
 export interface StackData {
-  enabled:boolean
   method?:Nullable<string>
   path?:Nullable<string>
+  folder?:Nullable<string>
+  file?:Nullable<string>
   pos?:Nullable<string>
   line?:Nullable<string>
+  stack?: Array<string>
 }
 
 export interface Entry {
   timestamp:number
-  level:LogLevel
+  level:Level
   threshold:number
+  logger: Logger
   category:Category
   message:string
   args:any[]
-  stackData:StackData
+  stackData?:Nullable<StackData>
 }
 
 
@@ -57,18 +119,9 @@ export interface Formatter<FormatterConfig = {}, Output extends string = string>
 
 
 /**
- * Log level names
- *
- * @type {(string|string|string|string)[]}
- */
-
-
-export type TCategoryLevels = { [name:string]:LogLevel }
-
-/**
  * Log level values
  */
-export enum LogLevel {
+export enum Level {
   trace = "trace",
   debug = "debug",
   info = "info",
@@ -77,9 +130,9 @@ export enum LogLevel {
   fatal = "fatal"
 }
 
-export type LogLevelName = keyof typeof LogLevel
+export type LevelName = keyof typeof Level
 
-export const LogLevelNames:Array<LogLevelName> = Object.values(LogLevel)
+export const LevelNames:Array<LevelName> = Object.values(Level)
 
 
 /**
@@ -89,10 +142,11 @@ export const LogLevelNames:Array<LogLevelName> = Object.values(LogLevel)
  * @interface Logger
  */
 export type Logger = {
-  name:string
-  setOverrideLevel:(level:LogLevel) => void
+	[Level in LevelName]: (message: string, ...args:any[]) => void
 } & {
-	[Level in LogLevelName]: (message: string, ...args:any[]) => void
+  path: string
+  basename: string
+  category: Category
 }
 
 

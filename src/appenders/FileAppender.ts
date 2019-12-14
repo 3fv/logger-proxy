@@ -29,7 +29,8 @@ export class FileAppender extends AbstractAppender<FileAppenderConfig> {
   
   /**
    * Appends the log event
-   * @param {ILogEvent} logEvent
+   * @param entry
+   * @param config
    */
   write(entry:Entry, config: Config) {
     const forward = () =>

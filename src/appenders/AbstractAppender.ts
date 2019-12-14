@@ -3,9 +3,9 @@ import {
   Category,
   Config,
   Formatter,
-  LogLevel,
+  Level,
   Entry,
-  Nullable
+  Nullable, AppenderConfig
 } from "../Types"
 import { identity } from "lodash"
 import { getConfig } from "../Config"
@@ -15,17 +15,17 @@ import { getThresholdValue } from "../Util"
 import { ok } from "assert"
 import { DefaultFormatter } from "../formatters/DefaultFormatter"
 
-export abstract class AbstractAppender<AppenderConfig = any> implements Appender<AppenderConfig> {
+export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig> implements Appender<C> {
   
   private state:{
-    config:  Nullable<AppenderConfig>
+    config:  Nullable<C>
     formatter: Nullable<Formatter>
   } = {
     config: null,
     formatter: null
   }
   
-  get config() {
+  get config():C {
     return this.state.config
   }
   
@@ -45,12 +45,14 @@ export abstract class AbstractAppender<AppenderConfig = any> implements Appender
   ) {
     
     Object.assign(this.state, {
-      config,
+      config: config || {},
       formatter
     })
   }
   
-  protected overrideThreshold: Nullable<LogLevel> = null
+  get threshold(): Nullable<Level> {
+    return this.state.config.threshold
+  }
   
   format(entry:Entry, config:Config = getConfig()): [string, Array<any>] {
     const {formatter} = this
@@ -59,9 +61,8 @@ export abstract class AbstractAppender<AppenderConfig = any> implements Appender
   }
   
   getThreshold(category: Category): number {
-    return Option.ofTruthy(category.threshold || this.overrideThreshold)
-      .map(it => getThresholdValue(it))
-      .getOrCall(() => getThresholdValue(getConfig().threshold))
+    return getThresholdValue(category.threshold || this.threshold || getConfig().threshold)
+    
   }
   
   
@@ -80,8 +81,11 @@ export abstract class AbstractAppender<AppenderConfig = any> implements Appender
   abstract write(entry: Entry, config: Config):void
   
   append(entry:Entry, config:Config) {
-    Option.ofTruthy(entry.threshold >= this.getThreshold(entry.category))
-      .ifSome(() => this.write(entry, config))
+    const
+      threshold = this.getThreshold(entry.category),
+      shouldLog = entry.threshold >= threshold
+        if (shouldLog)
+          this.write(entry, config)
   }
   
   

@@ -1,19 +1,27 @@
 import "jest"
-import * as TypeLogger from "../index"
-
-const Log = TypeLogger
+import { getLogger, configure, Level } from "../index"
+import { ConsoleAppender } from "../appenders/ConsoleAppender"
 
 describe('#logger',() => {
 	let log = null
-
+	
+	beforeAll(() => {
+		configure()
+			.appenders([new ConsoleAppender()])
+			.threshold(Level.trace)
+	})
 	beforeEach(() => {
-		log = Log.create(__filename)
+		log = getLogger(__filename)
 	})
 
 	it('#creates',() => {
 
 		expect(log).not.toBeNull()
-		log.info('test output')
+		
+		Object.values(Level).forEach(level => {
+			log[level].apply(log,[`testing level ${level}`])
+		})
+		
 	})
 	
 	// it('#styled',() => {

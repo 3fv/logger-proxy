@@ -1,5 +1,7 @@
 import { Option } from "@3fv/prelude-ts"
-import { LogLevel, LogLevelName, LogLevelNames } from "./Types"
+import { Level, LevelName, LevelNames } from "./Types"
+import { flatten } from "lodash"
+import { isString } from "@3fv/guard"
 
 export function stringify(value:any) {
   try {
@@ -39,12 +41,12 @@ export function warnLog(msg:string, err:Error) {
  * @returns {any}
  */
 export function parseLogLevel(level:string) {
-  let logLevel:any = LogLevel.DEBUG
+  let logLevel:any = Level.debug
   try {
-    logLevel = LogLevel[level.toUpperCase() as any]
+    logLevel = Level[level.toUpperCase() as any]
   } catch (err) {
     warnLog(`Failed to parse log level ${level}`, err)
-    logLevel = LogLevel.DEBUG
+    logLevel = Level.debug
   }
   
   return logLevel
@@ -88,11 +90,26 @@ export function getProp(obj, keyPath) {
 }
 
 
-const thresholdValueMap = LogLevelNames.reduce((map, level, index) =>
-    map.set(index, level)
-  , new Map<number, LogLevelName>())
+const thresholdValueMap = LevelNames.reduce((map, level, index) =>
+    map.set(level, index)
+  , new Map<LevelName,number>())
 
-export function getThresholdValue(level:LogLevel):number {
-  return Option.of(thresholdValueMap[level])
+export function getThresholdValue(level:Level):number {
+  return Option.of(thresholdValueMap.get(level))
     .getOrThrow()
+}
+
+export type BuildStringArg = Array<string | string[] | Array<BuildStringArg>>
+
+export function buildString(src: BuildStringArg,joinWith: string = " "): string {
+  let dest:any[] = [...src]
+  while(dest.some(it => Array.isArray(it))) {
+    dest = flatten(dest)
+  }
+  
+  return dest.join(joinWith)
+}
+
+export function pathToBasename(path: string): string {
+  return path.split("/").pop().replace(/\.[a-z]+$/,"")
 }

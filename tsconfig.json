@@ -14,13 +14,14 @@
 		"experimentalDecorators": true,
 		"preserveConstEnums": true,
 		"allowSyntheticDefaultImports": true,
-		"sourceMap": true,
 		"outDir": "./lib",
-		"baseUrl": "./"
+		"baseUrl": "./",
+		"inlineSourceMap": true
 	},
 	"compileOnSave": true,
 	"include": ["src"],
 	"exclude": [
+		"dist",
 		"lib",
 		"node_modules"
 	]

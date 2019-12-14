@@ -1,17 +1,19 @@
-import { Config, LogLevel } from "./Types"
+import { Config, Level } from "./Types"
 import { defaultsDeep } from "lodash"
 import { DefaultFormatter } from "./formatters/DefaultFormatter"
+import { DefaultStackDataProvider } from "./stack-data/DefaultStackDataProvider"
 
 
 const config: Config = {
   appenders: [],
   formatter: DefaultFormatter,
-  threshold: LogLevel.debug,
+  threshold: Level.debug,
   stack: {
     enabled: true,
-    removeFrames: 3
-  },
-  categories: []
+    removeFrames: 3,
+    provider: DefaultStackDataProvider,
+    root: ""
+  }
 }
 
 export function getConfig(): Config {
@@ -22,9 +24,15 @@ export function setConfig(patch: Partial<Config>):Config {
   return Object.assign(config, defaultsDeep({...patch}, config))
 }
 
+export function getAppenderIds(): string[] {
+  return getConfig().appenders.map(it => it.id)
+}
+
 export type Configurator = {
   [Key in keyof Config]: (value: Config[Key]) => Configurator
 }
+
+
 
 /**
  * Very simple chained configurator

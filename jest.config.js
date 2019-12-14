@@ -7,8 +7,9 @@ module.exports = {
     moduleDirectories: [
       "node_modules"
     ],
+    
     transform: {
-      ".*\\.ts": "ts-jest"
+      "src/.*\\.ts": "ts-jest"
       //...tsjPreset.transform,
       
     },
