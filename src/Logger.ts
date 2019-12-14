@@ -1,73 +1,25 @@
 import { styler as DefaultStyler } from "./DefaultStyler"
 import { warnLog, getProp, parseLogLevel, formatValue } from "./Util"
-import { ILogStyler, TCategoryLevels, LogLevel, ILogger, LogLevelNames, ILoggerFactory } from "./Types"
+import { Formatter, TCategoryLevels, LogLevel, Logger, LogLevelNames, Config } from "./Types"
+import { setConfig } from "./Config"
 
 
-let
-  styler:ILogStyler = DefaultStyler,
-  globalPrefix:string = ""
 
 
-/**
- * Enabled colored output
- *
- * @type {boolean}
- */
-let
-  stylerEnabled = false// true
-
-/**
- * Store explicit category levels
- *
- * @type {TCategoryLevels}
- */
-const
-  categoryLevels = {} as TCategoryLevels
-
-export function setCategoryLevels(newLevels:TCategoryLevels) {
-  Object.assign(categoryLevels, newLevels)
-}
-
-// Load any existing levels
-const
-  g:any = (
-    typeof window !== "undefined"
-  ) ?
-    window :
-    (
-      typeof global !== "undefined"
-    ) ? global : null
-
-if (g && g.TypeLoggerCategories) {
-  setCategoryLevels(g.TypeLoggerCategories)
-}
-
-let
-  logThreshold = g.TypeLoggerDefaultLevel || LogLevel.DEBUG
-
-/**
- * Get the category level
- *
- * @param name
- * @returns {LogLevel|number}
- */
-export function categoryLevel(name:string):number {
-  return categoryLevels[name] || 0
-}
 
 /**
  * Set global threshold
  *
  * @param level
  */
-export function setLogThreshold(level:LogLevel) {
-  logThreshold = level
+export function setRootThreshold(threshold:LogLevel): Config {
+  return setConfig({threshold})
 }
 
 /**
  * Current logger output
  */
-let loggerOutput:ILogger = new Proxy(console, {
+let loggerOutput:Logger = new Proxy(console, {
   get(target, prop) {
     if (prop ===
       "name" &&
@@ -145,7 +97,7 @@ const
  * @param logger
  * @param overrideLevel
  */
-export function setOverrideLevel(logger:ILogger, overrideLevel:LogLevel) {
+export function setOverrideLevel(logger:Logger, overrideLevel:LogLevel) {
   overrideLevels[logger.name] = overrideLevel
 }
 
@@ -157,15 +109,13 @@ export function setOverrideLevel(logger:ILogger, overrideLevel:LogLevel) {
  * @param level
  * @param args
  */
-function log(logger:ILogger, name, level, ...args):void {
-  let
-    overrideLevel = overrideLevels[logger.name]
+function log(logger:Logger, name, level, ...args):void {
+  let overrideLevel = overrideLevels[logger.name]
   
   if (typeof overrideLevel !== "number")
     overrideLevel = -1
   
   const
-    // debugEnabled = checkDebug(name),
     msgLevel = parseLogLevel(level),
     catLevel = categoryLevel(name)
   
@@ -228,13 +178,13 @@ export const DefaultLoggerFactory = {
    * and using the current output for output
    *
    * @param name
-   * @returns {ILogger}
+   * @returns {Logger}
    */
-  create(name:string):ILogger {
+  create(name:string):Logger {
     name = name.split("/").pop().split(".").shift()
     
     const
-      logger:ILogger = { name } as any
+      logger:Logger = { name } as any
     
     // Create levels
     LogLevelNames.reduce((logger, level) => {
@@ -257,96 +207,21 @@ export const DefaultLoggerFactory = {
 }
 
 /**
- * Internal core logger factory
- */
-let loggerFactory:ILoggerFactory = DefaultLoggerFactory
-
-/**
- * Change the internal default logger
- *
- * @export
- * @param newLoggerFactory new logger factory
- */
-export function setLoggerFactory(newLoggerFactory:ILoggerFactory) {
-  loggerFactory = newLoggerFactory
-}
-
-/**
  * Set the logger output
  *
  * @param newLoggerOutput
  */
-export function setLoggerOutput(newLoggerOutput:ILogger) {
+export function setLoggerOutput(newLoggerOutput:Logger) {
   loggerOutput = newLoggerOutput
 }
 
-/**
- * Set the styler
- *
- * @param newStyler
- */
-export function setStyler(newStyler:ILogStyler) {
-  styler = newStyler
-}
-
-/**
- * Get the current styler
- *
- * @returns {ILogStyler}
- */
-export function getStyler() {
-  return styler
-}
-
-/**
- * Global prefix for all loggers
- *
- * @param prefix
- */
-export function setPrefixGlobal(prefix:string) {
-  globalPrefix = prefix
-}
-
-/**
- * Wrap a logger and prepend all log calls
- *
- * @param logger
- * @param prefix
- */
-export function setPrefix(logger:ILogger, prefix:string):ILogger {
-  
-  const
-    newLogger = Object.assign({}, logger)
-  
-  LogLevelNames.forEach((level) => {
-    /**
-     * (description)
-     *
-     * @param args (description)
-     */
-    newLogger[level] = (...args) => {
-      return logger[level](prefix, ...args)
-    }
-  })
-  
-  return newLogger as ILogger
-}
-
-/**
- * Set custom styler enabled
- *
- * @param enabled
- */
-export function setStylerEnabled(enabled:boolean) {
-  stylerEnabled = enabled
-}
 
 /**
  * Create a new logger
  *
  * @param name
- * @returns {ILogger}
+ * @returns {Logger}
  */
 export function create(name:string) {
-  return loggerFactory.create(name)
+  return null
 }

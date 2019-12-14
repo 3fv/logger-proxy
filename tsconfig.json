@@ -4,30 +4,25 @@
 		"lib": [
 			"dom",
 			"es2015",
-			"es6",
-			"es7"
+			"es6"
 		],
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"declaration": true,
 		"emitDecoratorMetadata": true,
+		"jsx": "react",
 		"experimentalDecorators": true,
 		"preserveConstEnums": true,
 		"allowSyntheticDefaultImports": true,
 		"sourceMap": true,
-		"pretty": true,
-		"baseUrl": "./src",
-		"outDir": "./dist",
-		"paths": {
-			"*": ["./*"],
-			"typelogger": ["./index"],
-			"typelogger/*": ["./*"]
-		}
-		
-		
+		"outDir": "./lib",
+		"baseUrl": "./"
 	},
+	"compileOnSave": true,
+	"include": ["src"],
 	"exclude": [
-		"node_modules",
-		"dist"
+		"lib",
+		"node_modules"
 	]
+	
 }

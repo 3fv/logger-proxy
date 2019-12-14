@@ -1,9 +1,9 @@
-import 'jest'
+import "jest"
 import * as TypeLogger from "../index"
 
 const Log = TypeLogger
 
-test('#logger',() => {
+describe('#logger',() => {
 	let log = null
 
 	beforeEach(() => {

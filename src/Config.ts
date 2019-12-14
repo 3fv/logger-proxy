@@ -1,0 +1,46 @@
+import { Config, LogLevel } from "./Types"
+import { defaultsDeep } from "lodash"
+import { DefaultFormatter } from "./formatters/DefaultFormatter"
+
+
+const config: Config = {
+  appenders: [],
+  formatter: DefaultFormatter,
+  threshold: LogLevel.debug,
+  stack: {
+    enabled: true,
+    removeFrames: 3
+  },
+  categories: []
+}
+
+export function getConfig(): Config {
+  return config
+}
+
+export function setConfig(patch: Partial<Config>):Config {
+  return Object.assign(config, defaultsDeep({...patch}, config))
+}
+
+export type Configurator = {
+  [Key in keyof Config]: (value: Config[Key]) => Configurator
+}
+
+/**
+ * Very simple chained configurator
+ *
+ * @returns {Configurator}
+ */
+export function configure(): Configurator {
+  let ref: any = null
+  ref = new Proxy({}, {
+    get: (target: any, p: string, receiver: any) => {
+      return (newValue) => {
+        config[p] = newValue
+        return ref
+      }
+    }
+  }) as Configurator
+  
+  return ref
+}
