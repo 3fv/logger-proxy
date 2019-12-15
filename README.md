@@ -1,42 +1,52 @@
-typelogger
+# @3fv/logger
 ---
 
 
 ## Overview
-Super simply log wrapper for any framework or the console.
-Strongly typed with thresholds
+
+`@3fv/logger` born from `typelogger` inspired by `slf4j`,
+`log4j2` & `logback`, etc.
+
 
 ## Install
 Pretty simple
 
 ```bash
-npm i --save typelogger
+yarn i --save @3fv/logger
 ```
 
 ## Use
 It couldn't be much easier
 
 ```typescript
-import * as Log from "typelogger"
+import {getLogger, configure, Level} from "@3fv/logger"
+import { ConsoleAppender } from "@3fv/logger/appenders/console/ConsoleAppender"
+import { FileAppender } from "@3fv/logger/appenders/files/FileAppender" 
+import { RollingFileAppender } from "@3fv/logger/appenders/files/RollingFileAppender"
+import * as Path from "path"
 
-const logger = Log.create(__filename)
-logger.info('What up!!!')
+// Chained configure() function supports every option
+configure()
+      .appenders([
+        new ConsoleAppender(),
+        new FileAppender("file", {
+            filename: (index: number = -1) => Path.join("/tmp", index > -1 ? 
+                `spec.file.appender.${index}.log` : 
+                "spec.file.appender.log")
+        }),
+        new RollingFileAppender("rolling-file", {
+            filename: (index: number = -1) => Path.join("/tmp", index > -1 ? 
+                `spec.rolling.file.appender.${index}.log` : 
+                "spec.rolling.file.appender.log"),
+            maxFiles: 3,
+            maxSize: 1
+        })
+      ])
+      .threshold(Level.trace)
 
-// To override the output functions
-Log.setLoggerOutput(console)
 
-// To swap out the create factory entirely
-Log.setLoggerFactory({
-	create(name:string) {
+const log = getLogger(__filename)
+log.info('What up!!!')
 
-		// This is a crap example - checkout the ILogger def
-		// for the right way
-		console.log(`Creating custom logger with custom factory for: ${name}`)
-		return console as Log.ILogger
-	}
-})
-
-// Or just add a cute styler
-// Log.setStyler(Log.ILogStyler) - we use a simple chalk styler by default
 
 ```

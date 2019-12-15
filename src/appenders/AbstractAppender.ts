@@ -5,12 +5,11 @@ import {
   Formatter,
   Level,
   Entry,
-  Nullable, AppenderConfig
+  Nullable, AppenderConfig, LogFactory
 } from "../Types"
 import { identity } from "lodash"
-import { getConfig } from "../Config"
 import {Option} from "@3fv/prelude-ts"
-import {isDefined, isFunction} from "@3fv/guard"
+import {isDefined, isFunction, getValue} from "@3fv/guard"
 import { getThresholdValue } from "../util/CoreUtil"
 import { ok } from "assert"
 import { DefaultFormatter } from "../formatters/DefaultFormatter"
@@ -20,9 +19,11 @@ export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig
   private state:{
     config:  Nullable<C>
     formatter: Nullable<Formatter>
+    factory: Nullable<LogFactory>
   } = {
     config: null,
-    formatter: null
+    formatter: null,
+    factory: null
   }
   
   get config():C {
@@ -32,7 +33,7 @@ export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig
   get formatter(): Formatter {
     return Option.ofNullable(this.state.formatter)
       .orElse(() =>
-        Option.ofNullable(getConfig().formatter)
+        Option.ofNullable(this.state.factory.getConfig().formatter)
       )
       .getOrElse(DefaultFormatter)
   }
@@ -54,14 +55,24 @@ export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig
     return this.state.config.threshold
   }
   
-  format(entry:Entry, config:Config = getConfig()): [string, Array<any>] {
+  get factory(): LogFactory {
+    const {factory} = this.state
+    ok(!!factory, `LogFactory not set yet`)
+    return factory
+  }
+  
+  format(entry:Entry, config:Config = this.factory.getConfig()): [string, Array<any>] {
     const {formatter} = this
     ok(isDefined(formatter) && isFunction(formatter.format), `No valid formatter available`)
     return formatter.format(entry,config)
   }
   
+  setFactory(factory: LogFactory) {
+    this.state.factory = factory
+  }
+  
   getThreshold(category: Category): number {
-    return getThresholdValue(category.threshold || this.threshold || getConfig().threshold)
+    return getThresholdValue(category.threshold || this.threshold || this.factory.getConfig().threshold)
     
   }
   
@@ -70,7 +81,7 @@ export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig
     return Option.ofNullable(this.state.formatter)
       .match({
         Some: identity,
-        None: () => getConfig().formatter
+        None: () => this.factory.getConfig().formatter
       })
   }
   

@@ -1,14 +1,10 @@
-import { warnLog, getProp, parseLogLevel, formatValue, getThresholdValue, pathToBasename } from "./util/CoreUtil"
-import { Formatter, Level, Logger, LevelNames, Config, Category, Entry, Nullable, StackData } from "./Types"
-import { getConfig, setConfig } from "./Config"
-import {Option} from "@3fv/prelude-ts"
-import { cloneDeep } from "lodash"
+import { getThresholdValue, pathToBasename } from "./util/CoreUtil"
+import { Category, Config, Entry, Level, LogFactory, Logger } from "./Types"
+import { Option } from "@3fv/prelude-ts"
 import { isFunction } from "@3fv/guard"
-const loggerMap = new Map<string, Logger>()
 
-function log(logger: Logger,category: Category, level: Level, message: string, args:any[]) {
+function log(config: Config, logger: Logger,category: Category, level: Level, message: string, args:any[]) {
   const
-    config = getConfig(),
     {stack: stackConfig} = config,
     {config: categoryConfig} = category,
     {appenderIds} = categoryConfig,
@@ -36,12 +32,12 @@ function log(logger: Logger,category: Category, level: Level, message: string, a
 
 
 
-function makeLogger(path: string, categoryName: string): Logger {
-  return Option.of(Category.get(categoryName))
+export function makeLogger(factory: LogFactory, path: string, categoryName: string): Logger {
+  return Option.of(factory.getCategory(categoryName))
     .map(category =>
       Object.values(Level).reduce((logger, level) => {
         logger[level] = (message: string, ...args:any[]) => {
-          log(logger,category, level, message, args)
+          log(factory.getConfig(),logger,category, level, message, args)
         }
         return logger
       },{
@@ -53,10 +49,4 @@ function makeLogger(path: string, categoryName: string): Logger {
     .getOrThrow()
 }
 
-export function getLogger(path: string, categoryName: string = pathToBasename(path)): Logger {
-  let logger = loggerMap.get(path)
-  if (!logger)
-    loggerMap.set(path,logger = makeLogger(path, categoryName))
-  
-  return logger
-}
+

@@ -16,7 +16,15 @@
 		"allowSyntheticDefaultImports": true,
 		"outDir": "./lib",
 		"baseUrl": "./",
-		"inlineSourceMap": true
+		"inlineSourceMap": true,
+		"paths": {
+			"@3fv/logger": [
+				"./lib/index.js"
+			],
+			"@3fv/logger/*": [
+				"./lib/*"
+			]
+		}
 	},
 	"compileOnSave": true,
 	"include": ["src"],

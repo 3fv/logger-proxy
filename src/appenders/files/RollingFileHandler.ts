@@ -4,7 +4,8 @@ import * as FsAsync from "mz/fs"
 import { range } from "lodash"
 import { guard } from "@3fv/guard"
 import { WriteStream } from "fs"
-import { once } from "events"
+import * as Bluebird from "bluebird"
+import { rm, mv } from "shelljs"
 
 export class RollingFileHandler extends FileHandler<RollingFileAppenderConfig> {
   
@@ -57,41 +58,49 @@ export class RollingFileHandler extends FileHandler<RollingFileAppenderConfig> {
    * @returns {Promise<void>}
    */
   private async shiftFiles() {
-    const {stream} = this
-    try {
-      this.stream = null
-      if (!!stream) {
-        try {
-          const closePromise = once(stream, "close")
-          stream.close()
-          await closePromise
-        } catch (err) {
-          console.error(`Unable to cleanly close stream`, err)
-          throw err
-        }
-      }
-      const
-        filenames = range(0, this.maxFiles)
-          .map(index =>
-            [
-              index === 0 ? this.currentFilename : this.filename(index - 1),
-              this.filename(index)
-            ]
-          )
-  
-      for await (const [from, to] of filenames.reverse()) {
-        if (await FsAsync.exists(to)) {
-          await FsAsync.unlink(to)
+    if (this.currentFileSize >= this.maxFileSize) {
+      const { stream } = this
+      try {
+        this.stream = null
+        if (!!stream) {
+          try {
+            await Bluebird.fromCallback(fn => stream.end(fn))
+          } catch (err) {
+            console.error(`Unable to cleanly close stream`, err)
+            throw err
+          }
         }
     
-        await FsAsync.rename(from, to)
+        // CREATE PAIRS
+        const
+          filenames = range(0, this.maxFiles)
+            .map(index =>
+              [
+                index === 0 ? this.currentFilename : this.filename(index - 1),
+                this.filename(index)
+              ]
+            )
+    
+        // MOVE ALL FILES AS NEEDED IN REVERSE
+        for await (const [from, to] of filenames.reverse()) {
+          if (await FsAsync.exists(to)) {
+            rm(to)
+            //await FsAsync.unlink(to)
+          }
+      
+          if (await FsAsync.exists(from))
+            mv(from, to)
+        }
+      } catch (err) {
+        console.error(`Unable to cleanly shift files`, err)
       }
-    } catch (err) {
-      console.error(`Unable to cleanly shift files`, err)
     }
-    this.currentFilename = this.filename()
-    this.currentFileSize = 0
-    this.stream = super.createStream(this.currentFilename)
+    
+    if (!this.stream) {
+      this.currentFilename = this.filename()
+      this.currentFileSize = 0
+      this.stream = super.createStream(this.currentFilename)
+    }
   }
   
   /**
@@ -101,7 +110,7 @@ export class RollingFileHandler extends FileHandler<RollingFileAppenderConfig> {
    */
   protected async prepareFiles() {
     await this.houseKeeping()
-    await super.prepareFiles()
+    await this.prepareFiles()
   }
   
   /**
@@ -110,9 +119,9 @@ export class RollingFileHandler extends FileHandler<RollingFileAppenderConfig> {
    * @returns {Promise<void>}
    */
   protected async updateFiles(): Promise<void> {
-    if (this.currentFileSize >= this.maxFileSize) {
+    
       await this.shiftFiles()
-    }
+    
   }
   
   /**

@@ -15,16 +15,9 @@ const defaultCategoryConfig: CategoryConfig = {
 
 export class Category {
   
-  private static categories = new Map<string, Category>()
   
-  static get(name: string): Category {
-    const {categories} = this
-    if (!categories.has(name)) {
-      categories.set(name,new Category(name))
-    }
-    
-    return this.categories.get(name)
-  }
+  
+  
   
   private readonly state:{
     config: CategoryConfig
@@ -108,7 +101,7 @@ export interface Appender<AppenderConfig> {
   readonly type:string
   append:(entry:Entry, config:Config) => void
   close:() => Promise<void>
-  
+  setFactory: (factory: LogFactory) => void
   setFormatter?:(formatter:Nullable<Formatter>) => void
   getFormatter?:() => Nullable<Formatter>
   
@@ -203,6 +196,14 @@ export  type BackgroundColor =
   | "bgCyanBright"
   | "bgWhiteBright";
 
+
+export interface LogFactory {
+  getLogger: (path: string, categoryName?: Nullable<string>) => Logger
+  getCategory: (name: string) => Category
+  getAppenderIds: () => Array<string>
+  setConfig: (patch: Partial<Config>) => Config
+  getConfig: () => Config
+}
 /**
  Basic colors.
  

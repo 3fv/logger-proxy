@@ -4,6 +4,8 @@
  */
 
 
+import { configure } from "./Config"
+
 export * from './Config'
 
 /**
@@ -11,15 +13,10 @@ export * from './Config'
  */
 export * from "./Types"
 
-/**
- * getLogger
- */
-export * from "./Logger"
-
 
 
 /**
  * By default export Log manager
  */
-import { getLogger } from "./Logger"
-export default getLogger
+// import { getLogger } from "./Logger"
+export default configure

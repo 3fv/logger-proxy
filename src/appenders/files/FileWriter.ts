@@ -9,15 +9,17 @@ export abstract class FileWriter {
   protected stream:WriteStream
   
   
-  protected async writeToStream(messages:string[]):Promise<{bytes:number, count: number}> {
+  protected async writeToStream(messages:string[], stream: WriteStream = this.stream):Promise<{bytes:number, count: number}> {
     
     let result = {bytes: 0, count: 0}
-    
-    this.stream.cork()
+    if (!stream)
+      return result
+  
+    stream.cork()
     
     for await (const message of messages) {
-      if (!this.stream.write(message + "\n")) {
-        await once(this.stream, "drain")
+      if (!stream.write(message + "\n")) {
+        // await once(stream, "drain")
         break
       }
       
@@ -25,8 +27,8 @@ export abstract class FileWriter {
       result.count++
     }
     
-    await Deferred.delay(1)
-    this.stream.uncork()
+    // await Deferred.delay(1)
+    stream.uncork()
     
     return result
     

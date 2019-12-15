@@ -9,11 +9,18 @@ import { Deferred } from "../../util/Deferred"
 import { Option } from "@3fv/prelude-ts"
 import { mkdirp } from "../../util/ShellUtil"
 import * as FsAsync from "mz/fs"
+import * as Bluebird from "bluebird"
+import * as Fs from 'fs'
 
 export async function getFileSize(filename: string): Promise<number> {
-  return !(await FsAsync.exists(filename)) ?
-    0:
-    (await FsAsync.stat(filename)).size
+  return Fs.existsSync(filename) ? Fs.statSync(filename).size : 0
+  // stat !(
+  //   await FsAsync.exists(filename)
+  // ) ?
+  //   0 :
+  //   (
+  //     await FsAsync.stat(filename)
+  //   ).size
 }
 
 export class FileHandler<C extends FileAppenderConfig = FileAppenderConfig> extends FileWriter {
@@ -28,10 +35,10 @@ export class FileHandler<C extends FileAppenderConfig = FileAppenderConfig> exte
   protected readonly dir: string
   
   protected currentFileSize = 0
-  protected currentFilename:Nullable<string> = null
+  protected currentFilename: Nullable<string> = null
   
   get isReady() {
-    return this.running && !!this.stream
+    return this.running
   }
   
   protected filename(index: number = -1): string {
@@ -44,13 +51,26 @@ export class FileHandler<C extends FileAppenderConfig = FileAppenderConfig> exte
     
     this.config = config
     this.persistHandler = (force: Nullable<boolean> = false) => {
-      if (!this.isReady) return
-      const update = () => this.persist(force)
-      Option.of(this.updatingFilesDeferred)
-        .match({
-          Some: it => it.promise.then(update),
-          None: () => update()
-        })
+      if (!this.isReady) {
+        return
+      }
+      const update = () => {
+        const deferred = this.updatingFilesDeferred = new Deferred<void>()
+        this.persist(force)
+          .then(() => {
+            deferred.resolve()
+            this.updatingFilesDeferred = null
+          })
+          .catch(err => {
+            console.error(`Persist failed`, err)
+            deferred.resolve()
+            this.updatingFilesDeferred = null
+          })
+          
+      }
+  
+      if (!this.updatingFilesDeferred)
+        update()
       
     }
     
@@ -62,17 +82,15 @@ export class FileHandler<C extends FileAppenderConfig = FileAppenderConfig> exte
       mkdirp(directory)
     }
     
+    this.throttledFunction = throttle(this.persistHandler, 200)
     
-    
-    this.throttledFunction = throttle(this.persistHandler, 100)
-    
-    process.on("beforeExit", this.close.bind(this))
-  
+    // process.on("beforeExit", this.close.bind(this))
+    //
     this.prepareFiles()
       .catch(err => {
         console.error("Prepare failed", err)
       })
-    
+
   }
   
   protected async beforeOpen(filename: string, size: number): Promise<void> {
@@ -106,14 +124,39 @@ export class FileHandler<C extends FileAppenderConfig = FileAppenderConfig> exte
    *
    * @returns {Promise<void>}
    */
-  close(): Promise<void> {
-    if (!this.running) {
+  async close(): Promise<void> {
+    const { running, stream } = this
+    this.running = false
+    this.stream = null
+    if (!running || !stream) {
       return Promise.resolve()
     }
     
-    this.running = false
-    return this.persist(true)
-      .catch(err => console.error(`bad`, err))
+    if (this.updatingFilesDeferred) {
+      await this.updatingFilesDeferred.promise
+    }
+    
+    if (stream) {
+      if (this.queue.length) {
+        const entries = this.queue.join("\n")
+        await Bluebird.fromCallback(fn => stream.write(entries, fn))
+          .catch(err => console.warn(`Closing & last write failed`, err))
+        
+      }
+      
+      await Bluebird.fromCallback(fn => stream.end(fn))
+      
+    }
+    // await new Promise((resolve, reject) => {
+    //   try {
+    //     this.stream.end(resolve)
+    //   } catch (err) {
+    //     console.error("Unable to end", err)
+    //     reject(err)
+    //   }
+    // })
+    // await this.persist(true)
+    //   .catch(err => console.error(`bad`, err))
   }
   
   /**
@@ -122,82 +165,78 @@ export class FileHandler<C extends FileAppenderConfig = FileAppenderConfig> exte
    * @param {string} message
    */
   append(message: string) {
-    if(!this.running)
+    if (!this.running) {
       return
+    }
     
     this.queue.push(message)
     this.throttledFunction()
   }
   
   protected async persist(force: boolean = false) {
-    if (!this.running && !this.stream) {
+    if (!this.running) {
       console.warn("Appender is totally stopped")
       return
     }
-  
-    if (!this.stream) {
-      console.warn("Out stream is not open, likely rotating or preparing")
-      return
-    }
     
-    let { updatingFilesDeferred: deferred } = this
     
-    if (deferred) {
-      if (!force && this.running) {
-        return
-      } else {
-        await deferred.promise
-      }
-    }
+    
+    
+    // if (!force && this.running) {
+    //   return
+    // } else {
+    //   await deferred.promise
+    // }
+    //}
     
     // CREATED DEFERRED FOR THIS UPDATE
-    this.updatingFilesDeferred = deferred = new Deferred<void>()
-    
+    //this.updatingFilesDeferred = deferred = new Deferred<void>()
     
     try {
       
+      // if (!this.stream) {
+      //   await this.prepareFiles()
+      // }
+      //
       // CHECK IF UPDATES NEEDED
-      if (!force)
+      if (!force) {
         await this.updateFiles()
+      }
       
       // GET THE STREAM
-      const {stream} = this
+      const { stream } = this
       if (!stream) {
-        console.error(`No stream to write to?`)
-        deferred.resolve()
-        return
-      }
-      const
-        persistSet = [...this.queue],
-        {bytes, count} = await this.writeToStream(persistSet)
+        //console.error(`No stream to write to?`)
         
-      
-      // Remove all successful entries
-      if (count) {
-        this.queue.splice(0, count)
-        this.currentFileSize += bytes
-      }
-      
-      if (force) {
-        await new Promise((resolve, reject) => {
-          try {
-            this.stream.end(resolve)
-          } catch (err) {
-            console.error("Unable to end", err)
-            reject(err)
-          }
-        })
       } else {
-        deferred.resolve()
+        const
+          persistSet = [...this.queue],
+          { bytes, count } = await this.writeToStream(persistSet, stream)
+        
+        // Remove all successful entries
+        if (count) {
+          this.queue.splice(0, count)
+          this.currentFileSize += bytes
+        }
+        
+        if (force) {
+          await new Promise((resolve, reject) => {
+            try {
+              stream.end(resolve)
+            } catch (err) {
+              console.error("Unable to end", err)
+              reject(err)
+            }
+          })
+        }
+        
       }
+      
     } catch (err) {
       console.error(`Unable to update files`, err)
-      deferred.reject(err)
-    } finally {
-      this.updatingFilesDeferred = null
     }
     
-    await deferred.promise
+    // await deferred.promise
     
   }
   
