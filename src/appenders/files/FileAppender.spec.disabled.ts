@@ -1,10 +1,10 @@
 import "jest"
 import { Config, Level, LogFactory, Logger, Nullable } from "../../Types"
 import { configure } from "../../Config"
-import { FileAppender } from "../files/FileAppender"
+import { FileAppender } from "./FileAppender"
 import * as Path from "path"
 import { Deferred } from "../../util/Deferred"
-import { cleanup, getLogFiles } from "../../test/test-utils"
+import { cleanup, getLogFiles, TestLogDir } from "../../test/test-utils"
 
 let config: Nullable<Config> = null
 let factory: Nullable<LogFactory> = null
@@ -16,12 +16,12 @@ beforeEach(async () => {
   factory = configure()
     .appenders([
       new FileAppender("file", {
-        filename: (index: number = -1) => Path.join("/tmp", index > -1 ?
+        filename: (index: number = -1) => Path.join(TestLogDir, index > -1 ?
           `spec.file.appender.${index}.log` :
           "spec.file.appender.log")
       })
     ])
-    .threshold(Level.trace)
+    .rootLevel(Level.trace)
     .getFactory()
   log = factory.getLogger(__filename)
   config = factory.getConfig()
