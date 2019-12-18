@@ -1,7 +1,8 @@
 import { Option } from "@3fv/prelude-ts"
 import { Level, LevelName, LevelNames } from "../Types"
 import { flatten } from "lodash"
-import { isString } from "@3fv/guard"
+import { isString, getValue } from "@3fv/guard"
+import { requiredValue } from "./FpTools"
 
 export function stringify(value:any) {
   try {
@@ -65,7 +66,7 @@ export function formatValue(value) {
   return (
     ["number", "string", "boolean"].indexOf(valueType) > -1
   ) ?
-    value : JSON.stringify(value, null, 4)
+    value : getValue(() => JSON.stringify(value, null, 4), "[Circular]")
 }
 
 /**
@@ -95,8 +96,7 @@ const thresholdValueMap = LevelNames.reduce((map, level, index) =>
   , new Map<LevelName,number>())
 
 export function getThresholdValue(level:Level):number {
-  return Option.of(thresholdValueMap.get(level))
-    .getOrThrow()
+  return requiredValue(thresholdValueMap.get(level))
 }
 
 export type BuildStringArg = Array<string | string[] | Array<BuildStringArg>>

@@ -1,22 +1,18 @@
-import { Option } from "@3fv/prelude-ts"
 import { defaultsDeep } from "lodash"
 
 export type Nullable<T> = T | undefined | null
 
 export interface CategoryConfig {
   appenderIds?: Nullable<string[]>
-  threshold?: Nullable<Level>
+  level?: Nullable<Level>
 }
 
 const defaultCategoryConfig: CategoryConfig = {
   appenderIds: null,
-  threshold: null
+  level: null
 }
 
 export class Category {
-  
-  
-  
   
   
   private readonly state:{
@@ -27,8 +23,8 @@ export class Category {
     return this.state.config
   }
   
-  get threshold(): Level{
-    return this.state.config.threshold
+  get level(): Level{
+    return this.state.config.level
   }
   
   constructor(
@@ -55,7 +51,7 @@ export class Category {
 }
 
 export interface Config {
-  threshold:Level
+  rootLevel:Level
   formatter:Formatter
   appenders:Appender<any>[]
   
@@ -68,10 +64,16 @@ export interface Config {
   
 }
 
+/**
+ * Responsible for collecting stack, method, file info
+ */
 export type StackDataProvider = (entry:Partial<Entry>, config:Config) => Nullable<StackData>
 
+/**
+ * Appender config
+ */
 export interface AppenderConfig {
-  threshold?: Nullable<Level>
+  level?: Nullable<Level>
 }
 
 export interface StackData {
@@ -87,7 +89,7 @@ export interface StackData {
 export interface Entry {
   timestamp:number
   level:Level
-  threshold:number
+  overrideThreshold:number
   logger: Logger
   category:Category
   message:string
@@ -140,9 +142,14 @@ export const LevelNames:Array<LevelName> = Object.values(Level)
 export type Logger = {
 	[Level in LevelName]: (message: string, ...args:any[]) => void
 } & {
+  isTraceEnabled(): boolean
+  isDebugEnabled(): boolean
+  isInfoEnabled(): boolean
   path: string
   basename: string
   category: Category
+  setOverrideThreshold: (level: Level | number) => Logger
+  readonly overrideThreshold: number
 }
 
 
@@ -198,6 +205,7 @@ export  type BackgroundColor =
 
 
 export interface LogFactory {
+  getRootLevel: () => Level
   getLogger: (path: string, categoryName?: Nullable<string>) => Logger
   getCategory: (name: string) => Category
   getAppenderIds: () => Array<string>

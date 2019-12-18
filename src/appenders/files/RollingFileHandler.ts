@@ -1,11 +1,11 @@
 import { RollingFileAppenderConfig } from "./FileAppenderTypes"
 import { FileHandler } from "./FileHandler"
 import * as FsAsync from "mz/fs"
-import { range } from "lodash"
+import { range, takeWhile } from "lodash"
 import { guard } from "@3fv/guard"
 import { WriteStream } from "fs"
 import * as Bluebird from "bluebird"
-import { rm, mv } from "shelljs"
+import { rm, mv, test } from "shelljs"
 
 export class RollingFileHandler extends FileHandler<RollingFileAppenderConfig> {
   
@@ -25,17 +25,17 @@ export class RollingFileHandler extends FileHandler<RollingFileAppenderConfig> {
   }
   
   private async houseKeeping() {
-    const filenames = range(this.maxFiles,100 - this.maxFiles)
+    await Promise.all(range(this.maxFiles,100 - this.maxFiles)
       .map(index => this.filename(index))
+      .map(filename =>
+        FsAsync.exists(filename)
+          .then(exists => !exists ?
+            Promise.resolve(null) :
+            FsAsync.unlink(filename)
+              .catch(err => console.error(`Unable to remove ${filename}`, err))
+          )
+      ))
     
-    for await (const filename of filenames) {
-      if (await FsAsync.exists(filename)) {
-        console.warn(`${filename} should not exist, removing`)
-        await guard(() => FsAsync.unlink(filename), err => console.error(`Unable to remove ${filename}`, err))
-        continue
-      }
-      break
-    }
   }
   
   /**

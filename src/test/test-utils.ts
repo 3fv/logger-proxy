@@ -1,11 +1,27 @@
 import { Config } from "../Types"
-import { find, rm } from "shelljs"
+import { test, find, rm } from "shelljs"
 import { Deferred } from "../util/Deferred"
+import { mkdirp } from "../util/ShellUtil"
+
+export const TestLogDir = "/tmp/3fv-logger-test"
+
+
+
+if (test("-e", TestLogDir)){
+  rm("-Rf", TestLogDir)
+}
+mkdirp(TestLogDir)
+
+let testIndex = 0
+
+export function getNextTestIndex() {
+  return testIndex++
+}
 
 export function getLogFiles(prefix: string) {
   const regex = new RegExp(`${prefix}\\..*\\.log$`)
-  const allFiles = find("/tmp"),
-  filteredFiles = allFiles.filter(it => it.includes(prefix) || regex.test(it))
+  const allFiles = find(TestLogDir),
+  filteredFiles = !Array.isArray(allFiles) ? [] : allFiles.filter(it => it.includes(prefix) || regex.test(it))
   return filteredFiles
 }
 

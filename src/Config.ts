@@ -5,10 +5,15 @@ import { DefaultStackDataProvider } from "./stack-data/DefaultStackDataProvider"
 import { pathToBasename } from "./util/CoreUtil"
 import { makeLogger } from "./Logger"
 
+/**
+ * Config defaults
+ *
+ * @type {Config}
+ */
 const defaultConfig: Config = {
   appenders: [],
   formatter: DefaultFormatter,
-  threshold: Level.debug,
+  rootLevel: Level.debug,
   stack: {
     enabled: true,
     removeFrames: 3,
@@ -17,18 +22,9 @@ const defaultConfig: Config = {
   }
 }
 
-// export function getConfig(): Config {
-//   return config
-// }
-//
-// export function setConfig(patch: Partial<Config>):Config {
-//   return Object.assign(config, defaultsDeep({...patch}, config))
-// }
-
-// export function getAppenderIds(): string[] {
-//   return getConfig().appenders.map(it => it.id)
-// }
-
+/**
+ * Configurator creates log factories
+ */
 export type Configurator = {
   [Key in keyof Config]: (value: Config[Key]) => Configurator
 } & {
@@ -49,7 +45,9 @@ export function configure(): Configurator {
     factory: LogFactory = {
     
     getConfig: (): Config =>  config,
-  
+      getRootLevel: (): Level =>
+        config.rootLevel
+      ,
       setConfig: (patch: Partial<Config>): Config => {
         return Object.assign(config, defaultsDeep({ ...patch }, config))
       },

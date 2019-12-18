@@ -12,7 +12,7 @@ beforeEach(async () => {
     .appenders([
       new ConsoleAppender()
     ])
-    .threshold(Level.trace)
+    .rootLevel(Level.trace)
     .getFactory()
   log = factory.getLogger(__filename)
 })

@@ -12,8 +12,8 @@ echo Publishing
 
 cp README.md package.json lib/
 cd src 
-find ./ -name "*.ts" | xargs -IsrcFile cp srcFile ../lib 
-cd ../lib
+#find ./ -name "*.ts" | xargs -IsrcFile cp srcFile ../lib
+#cd ../lib
 
 yarn publish . --non-interactive --tag ${NPM_VERSION}
 git push 

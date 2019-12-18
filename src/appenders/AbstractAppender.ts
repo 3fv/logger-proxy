@@ -7,9 +7,9 @@ import {
   Entry,
   Nullable, AppenderConfig, LogFactory
 } from "../Types"
-import { identity } from "lodash"
+import { identity, memoize } from "lodash"
 import {Option} from "@3fv/prelude-ts"
-import {isDefined, isFunction, getValue} from "@3fv/guard"
+import {isDefined, isFunction} from "@3fv/guard"
 import { getThresholdValue } from "../util/CoreUtil"
 import { ok } from "assert"
 import { DefaultFormatter } from "../formatters/DefaultFormatter"
@@ -24,6 +24,10 @@ export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig
     config: null,
     formatter: null,
     factory: null
+  }
+  
+  protected getRootThreshold(): number {
+    return getThresholdValue(this.factory.getConfig().rootLevel)
   }
   
   get config():C {
@@ -51,8 +55,8 @@ export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig
     })
   }
   
-  get threshold(): Nullable<Level> {
-    return this.state.config.threshold
+  get level(): Nullable<Level> {
+    return this.state.config.level
   }
   
   get factory(): LogFactory {
@@ -71,10 +75,16 @@ export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig
     this.state.factory = factory
   }
   
-  getThreshold(category: Category): number {
-    return getThresholdValue(category.threshold || this.threshold || this.factory.getConfig().threshold)
+  getThreshold = memoize((category: Category): number => {
+    return Math.max(this.getRootThreshold(),...[
+      category.level,
+      this.level
+    ]
+      .filter(isDefined)
+      .map(getThresholdValue))
     
-  }
+    
+  })
   
   
   getFormatter():Formatter {
@@ -91,14 +101,33 @@ export abstract class AbstractAppender<C extends AppenderConfig = AppenderConfig
   
   abstract write(entry: Entry, config: Config):void
   
+  /**
+   * Append a new entry
+   *
+   * @param {Entry} entry
+   * @param {Config} config
+   */
   append(entry:Entry, config:Config) {
     const
-      threshold = this.getThreshold(entry.category),
-      shouldLog = entry.threshold >= threshold
-        if (shouldLog)
-          this.write(entry, config)
+      entryThreshold = getThresholdValue(entry.level),
+      shouldLog =
+        // IF OVERRIDE IS SET THEN USE IT
+        (isDefined(entry.overrideThreshold) &&
+        entryThreshold >= entry.overrideThreshold) ||
+        
+        // OTHERWISE CHECK NORMALLY
+        (entryThreshold >= this.getThreshold(entry.category) &&
+          !isDefined(entry.overrideThreshold))
+    
+    if (shouldLog)
+      this.write(entry, config)
   }
   
+  /**
+   * Close the logger
+   *
+   * @returns {Promise<void>}
+   */
   async close(): Promise<void> {}
   
 }
