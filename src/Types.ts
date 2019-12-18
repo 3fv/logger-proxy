@@ -97,6 +97,7 @@ export interface Entry {
   stackData?:Nullable<StackData>
 }
 
+export type AppenderTemplateFn<Ext = any> = Entry & Ext
 
 export interface Appender<AppenderConfig> {
   readonly id:string

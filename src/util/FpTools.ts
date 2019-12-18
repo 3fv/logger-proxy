@@ -4,6 +4,10 @@ import { ShellString, test } from "shelljs"
 import { Nullable } from "../Types"
 import { RequiredValueError } from "./Errors"
 
+export function Run<T = any>(fn:() => T):T {
+  return fn()
+}
+
 export function IfElse<T, F = T | undefined>(test: boolean | (() => boolean), truthy: T | (() => T), falsey: F| (() => F) = undefined): T | F {
   const isTruthy:any = isFunction(test) ? test() : test
   return isDefined(isTruthy) && isTruthy !== false && isTruthy !== 0 ?

@@ -3,7 +3,7 @@
   "version": "1.1.5",
   "description": "A simply typed logger for typescript",
   "main": "index.js",
-  "typings": "index.d.ts",
+  "types": "index.d.ts",
   "scripts": {
     "build": "mkdir -p lib && cp package.json lib && tsc -b tsconfig.json",
     "build:watch": "yarn run build -- --watch",
