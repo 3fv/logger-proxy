@@ -1,6 +1,6 @@
 {
   "name": "@3fv/logger",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "A simply typed logger for typescript",
   "main": "index.js",
   "types": "index.d.ts",
