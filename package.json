@@ -9,7 +9,7 @@
     "build:watch": "yarn run build -- --watch",
     "test": "jest",
     "test:watch": "jest --watch",
-    "clean": "rm -Rf lib",
+    "clean": "if test -e lib;then; rm -Rf lib;fi",
     "postversion": "./scripts/release.sh $npm_package_version",
     "release": "yarn build  && yarn version --patch --non-interactive"
   },
