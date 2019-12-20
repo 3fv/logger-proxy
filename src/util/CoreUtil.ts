@@ -12,7 +12,11 @@ export function stringify(value:any) {
       args.push(["message", "stack", "type", "name"])
     }
     
-    return JSON.stringify(...args)
+    let json = JSON.stringify(...args)
+    if (json.length > 2048)
+      json = json.substr(0,2048)
+    
+    return json
     
   } catch (e) {
     return "[Circular]"
