@@ -11,10 +11,12 @@ git push --tags
 echo Publishing
 
 cp README.md package.json lib/
-cd src 
+#cd src
 #find ./ -name "*.ts" | xargs -IsrcFile cp srcFile ../lib
-#cd ../lib
 
+pushd lib
 yarn publish . --non-interactive --tag ${NPM_VERSION}
+cp package.json ../
+popd
 git push 
 echo "Successfully released version ${NPM_VERSION}!"
