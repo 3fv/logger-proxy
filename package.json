@@ -5,7 +5,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "build": "mkdir -p lib && cp package.json lib && tsc -b tsconfig.json",
+    "build": "if [ ! -e index.d.ts ];then mkdir -p lib && cp package.json lib && tsc -b tsconfig.json; fi",
+    "//build": "mkdir -p lib && cp package.json lib && tsc -b tsconfig.json",
     "build:watch": "yarn run build -- --watch",
     "test": "jest",
     "test:watch": "jest --watch",
