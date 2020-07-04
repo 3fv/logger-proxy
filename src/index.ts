@@ -59,6 +59,10 @@ export function setLoggingProvider(newLoggingProvider: LoggingProvider) {
   loggerState.loggingProvider = newLoggingProvider
 }
 
+export function getLoggingProvider<ExtraArgs extends any[] = []>(): LoggingProvider<ExtraArgs> {
+  return loggerState.loggingProvider
+}
+
 export function getLogger<ExtraArgs extends any[] = []>(name: string, ...args: ExtraArgs) {
   return (loggerState.loggingProvider as LoggingProvider<ExtraArgs>)(name,...args)
 }
