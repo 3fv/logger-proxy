@@ -18,6 +18,11 @@ export const LevelNames:Array<LevelName> = Object.values(Level)
 
 export type ILogger = {
   [Level in LevelName]: (message: string, ...args:any[]) => void
+} & {
+  isTraceEnabled:() => boolean
+  isDebugEnabled:() => boolean
+  isInfoEnabled:() => boolean
+  isWarnEnabled:() => boolean
 }
 
 export type LoggingProvider<ExtraArgs extends any[] = []> =  (name: string, ...extraArgs:ExtraArgs) => ILogger
@@ -37,8 +42,9 @@ export const DefaultLoggingProvider: LoggingProvider = (name:string) => {
     
     
     // Create levels
-    return LevelNames.reduce((logger:any, level) => ({
+    return LevelNames.reduce((logger:any, level: string) => ({
       ...logger,
+      ["is" + level[0].toUpperCase() + level.substr(1) + "Enabled"]: () => true,
       [level]: (...args) => {
         let fn = console[level]
         fn = typeof fn === "function" ? fn.bind(console) : console.log.bind(console)
