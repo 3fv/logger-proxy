@@ -4,10 +4,7 @@ import { getLoggingManager, LoggingManager } from "./provider"
 import { isString } from "./util"
 
 const consoleLevelToFn = (level: string) => {
-  const fn = console[level]
-  if (!fn) {
-    throw Error(`Unknown console level: ${level}`)
-  }
+  const fn = console[level] ?? console.log
   
   return fn.bind(console)
 }
