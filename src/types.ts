@@ -10,7 +10,7 @@ export enum Level {
 }
 
 export type LevelName = keyof typeof Level
-
+export type LevelKind = LevelName | Level
 export const LevelNames: Array<LevelName> = Object.values(Level)
 
 export type LevelEnableFnName = `is${Capitalize<LevelName>}Enabled`
