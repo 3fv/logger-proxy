@@ -34,7 +34,7 @@ export type ILogger = {
 export interface ILoggerEvent<Data extends {} = any> {
   name: string
   timestamp: number
-  level: Level
+  level: LevelKind
   data?: Data
   args?: any[]
 }
