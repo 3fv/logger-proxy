@@ -64,7 +64,14 @@ export class LoggingManager<Record extends LogRecord = any> {
   set handler(newHandler: LogHandler<Record>) {
     this.state.handler = newHandler
   }
-
+  
+  
+  setRootLevel(newLevel: LevelKind) {
+    this.rootLevel = newLevel
+  }
+  
+  
+  
   fire(record: LogRecord<Record>) {
     this.handler.handle(record as Record)
   }

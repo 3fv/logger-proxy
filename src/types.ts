@@ -16,7 +16,7 @@ export const LevelThresholds = fromPairs(LevelNames.map((level, i) => [level, i]
 export type LevelEnableFnName = `is${Capitalize<LevelName>}Enabled`
 
 export interface LogHandler<Record extends LogRecord = any> {
-  handle:(record:Record) => void
+  handle(record:Record): void
 }
 
 // export type ILogger = {

@@ -19,11 +19,6 @@ export interface LoggerState {
 
 export class Logger {
   readonly state: LoggerState = {}
-
-  get infoEnabled() {
-    return LevelThresholds["info"]
-  }
-
   
 
   log(record: LogRecord)
@@ -40,19 +35,50 @@ export class Logger {
 
     this.manager.fire(record)
   }
-
+  
+  /**
+   * Factory for the log
+   * level functions
+   *
+   * @param {LevelKind} level
+   * @returns {(message: string, ...args: any[]) => void}
+   * @private
+   */
   private createLevelLogger(level: LevelKind) {
     return (message: string, ...args: any[]) => {
       this.log(level, message, ...args)
     }
   }
-
+  
+  /**
+   * Factory for is<Level>Enabled
+   *
+   * @param {LevelKind} level
+   * @returns {() => boolean}
+   * @private
+   */
+  private createLevelEnabled(level: LevelKind) {
+    return () => {
+      const {rootThreshold} = this.manager
+      const testThreshold = LevelThresholds[level]
+      
+      return testThreshold >= rootThreshold
+    }
+  }
+  
   readonly trace = this.createLevelLogger("trace")
   readonly debug = this.createLevelLogger("debug")
   readonly info = this.createLevelLogger("info")
   readonly warn = this.createLevelLogger("warn")
   readonly error = this.createLevelLogger("error")
   readonly fatal = this.createLevelLogger("fatal")
+  
+  readonly isTraceEnabled = this.createLevelEnabled("trace")
+  readonly isDebugEnabled = this.createLevelEnabled("debug")
+  readonly isInfoEnabled = this.createLevelEnabled("info")
+  readonly isWarnEnabled = this.createLevelEnabled("warn")
+  readonly isErrorEnabled = this.createLevelEnabled("error")
+  readonly isFatalEnabled = this.createLevelEnabled("fatal")
   
   constructor(
     public readonly manager: LoggingManager,
