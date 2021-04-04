@@ -1,4 +1,4 @@
-
+import { fromPairs } from "lodash"
 
 export enum Level {
   trace = "trace",
@@ -9,20 +9,24 @@ export enum Level {
   fatal = "fatal"
 }
 
-export type LevelName = keyof typeof Level
+export type LevelName = `${Level}`
 export type LevelKind = LevelName | Level
-export const LevelNames: Array<LevelName> = Object.values(Level)
-
+export const LevelNames:Array<LevelName> = Object.values(Level)
+export const LevelThresholds = fromPairs(LevelNames.map((level, i) => [level, i])) as Record<LevelKind, number>
 export type LevelEnableFnName = `is${Capitalize<LevelName>}Enabled`
 
-export type ILogger = {
-  name: string
-}&{
-  [Level in LevelName]: (message: string, ...args: any[]) => void
-  
-} & {
-  [Fn in LevelEnableFnName]: () => boolean
+export interface LogHandler<Record extends LogRecord = any> {
+  handle:(record:Record) => void
 }
+
+// export type ILogger = {
+//   name:string
+// } & {
+//   [Level in LevelName]:(message:string, ...args:any[]) => void
+//
+// } & {
+//   [Fn in LevelEnableFnName]:() => boolean
+// }
 // & {
 //   isTraceEnabled: () => boolean
 //   isDebugEnabled: () => boolean
@@ -30,11 +34,10 @@ export type ILogger = {
 //   isWarnEnabled: () => boolean
 // }
 
-
-export interface ILoggerEvent<Data extends {} = any> {
-  name: string
-  timestamp: number
-  level: LevelKind
-  data?: Data
-  args?: any[]
+export interface LogRecord<Data = any> {
+  category:string
+  timestamp:number
+  level:LevelKind
+  data?:Data
+  message:string
 }

@@ -2,6 +2,9 @@
  * Log level values
  */
 
-export * from "./provider"
+
+export * from "./ConsoleLogHandler"
+export * from "./LoggingManager"
 export * from "./types"
-export * from "./logger"
+export * from "./Logger"
+export * from "./getLogger"
