@@ -29,7 +29,7 @@ export class Logger {
           ...pick(this, ["category"]),
           message: args[0],
           level: levelOrRecord,
-          data: args.slice(1)
+        args: args.slice(1)
         } as LogRecord)
       : levelOrRecord
 
