@@ -27,7 +27,8 @@ export class Logger {
     const record = isString(levelOrRecord)
       ? ({
           ...pick(this, ["category"]),
-          message: args[0],
+        timestamp: Date.now(),
+        message: args[0],
           level: levelOrRecord,
         args: args.slice(1)
         } as LogRecord)
