@@ -57,7 +57,7 @@ export class ConsoleLogHandler<Record extends LogRecord>
       .map(args => args.map(this.formatArg))
       .map(args => {
         if (typeof process?.stdout !== "undefined") {
-          process.stdout.write(args.join('\t'))
+          process.stdout.write(args.join('\t') + '\n')
         } else {
           console[record.level].apply(
             console,
