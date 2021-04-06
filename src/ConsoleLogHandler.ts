@@ -35,7 +35,7 @@ export class ConsoleLogHandler<Record extends LogRecord>
  
   readonly config: ConsoleLogHandlerConfig
 
-  private readonly formatArg = (arg: any) => (!arg || isString(arg)) ? arg :  this.config.prettyPrint ?  JSON.stringify(arg,null,2) : JSON.stringify(arg)
+  private readonly formatArg = (arg: any) => (!arg) ? arg :  this.config.prettyPrint ?  JSON.stringify(arg,null,2) : JSON.stringify(arg)
   
   /**
    * Handle log records, transform, push to ES
@@ -45,20 +45,20 @@ export class ConsoleLogHandler<Record extends LogRecord>
   handle(record: Record): void {
     const { level, message, data, args, category, timestamp } = record
 
-    let logFn: Function
-    if (this.config.cacheEnabled) {
-      logFn = getConsoleLogBinding(record.level)
-    } else {
-      logFn = getBoundConsoleFn(record.level)
-    }
+    // let logFn: Function
+    // if (this.config.cacheEnabled) {
+    //   logFn = getConsoleLogBinding(record.level)
+    // } else {
+    //   logFn = getBoundConsoleFn(record.level)
+    // }
 
     asOption([`[${category}]\t(${level})\t${message}`,
       ...(Array.isArray(args) ? args : [args])])
       .map(args => args.map(this.formatArg))
       .map(args => {
-        logFn(
+        console[record.level].apply(this,[
           args.join(" ")
-        )
+        ])
       })
   }
   
