@@ -52,13 +52,18 @@ export class ConsoleLogHandler<Record extends LogRecord>
     //   logFn = getBoundConsoleFn(record.level)
     // }
 
-    asOption([`[${category}]\t(${level})\t${message}`,
+    asOption([`[${category}]  (${level})  ${message}`,
       ...(Array.isArray(args) ? args : [args])])
       .map(args => args.map(this.formatArg))
       .map(args => {
-        console[record.level].apply(this,
-          args
-        )
+        if (typeof process?.stdout !== "undefined") {
+          process.stdout.write(args.join('\t'))
+        } else {
+          console[record.level].apply(
+            console,
+            args
+          )
+        }
       })
   }
   
