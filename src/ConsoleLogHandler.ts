@@ -1,6 +1,7 @@
 import { LevelKind, LogHandler, LogRecord } from "./types"
 import { asOption } from "@3fv/prelude-ts"
-import { isString } from "@3fv/guard"
+import { isObject, isString } from "@3fv/guard"
+
 
 const consoleLogBindings = new Map<LevelKind, (...args: any[]) => any>()
 
@@ -35,7 +36,7 @@ export class ConsoleLogHandler<Record extends LogRecord>
  
   readonly config: ConsoleLogHandlerConfig
 
-  private readonly formatArg = (arg: any) => (!arg) ? arg :  this.config.prettyPrint ?  JSON.stringify(arg,null,2) : JSON.stringify(arg)
+  private readonly formatArg = (arg: any) => (!arg) ? arg : isObject(arg) ? arg :   this.config.prettyPrint ?  JSON.stringify(arg,null,2) : JSON.stringify(arg)
   
   /**
    * Handle log records, transform, push to ES
@@ -56,14 +57,18 @@ export class ConsoleLogHandler<Record extends LogRecord>
       ...(Array.isArray(args) ? args : [args])])
       .map(args => args.map(this.formatArg))
       .map(args => {
-        if (typeof process?.stdout !== "undefined") {
-          process.stdout.write(args.join('\t') + '\n')
-        } else {
-          console[record.level].apply(
-            console,
-            args
-          )
-        }
+        console[record.level].apply(
+          console,
+          args
+        )
+        // if (typeof process?.stdout !== "undefined") {
+        //   process.stdout.write(args.join('\t') + '\n')
+        // } else {
+        //   console[record.level].apply(
+        //     console,
+        //     args
+        //   )
+        // }
       })
   }
   
