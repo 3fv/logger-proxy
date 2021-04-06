@@ -56,9 +56,9 @@ export class ConsoleLogHandler<Record extends LogRecord>
       ...(Array.isArray(args) ? args : [args])])
       .map(args => args.map(this.formatArg))
       .map(args => {
-        console[record.level].apply(this,[
-          args.join(" ")
-        ])
+        console[record.level].apply(this,
+          args
+        )
       })
   }
   
