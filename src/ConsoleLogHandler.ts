@@ -1,4 +1,6 @@
 import { LevelKind, LogHandler, LogRecord } from "./types"
+import { asOption } from "@3fv/prelude-ts"
+import { isString } from "@3fv/guard"
 
 const consoleLogBindings = new Map<LevelKind, (...args: any[]) => any>()
 
@@ -14,23 +16,60 @@ export function getConsoleLogBinding(level: LevelKind) {
   return consoleLogBindings.get(level)
 }
 
+export interface ConsoleLogHandlerConfig<Record extends LogRecord = any> {
+  cacheEnabled: boolean
+  prettyPrint: boolean
+}
+
+export type ConsoleLogHandlerOptions<Record extends LogRecord> = Partial<
+  ConsoleLogHandlerConfig<Record>
+>
+
+const defaultConfig: ConsoleLogHandlerConfig = {
+  cacheEnabled: true,
+  prettyPrint: true
+}
 
 export class ConsoleLogHandler<Record extends LogRecord>
   implements LogHandler<Record> {
+ 
+  readonly config: ConsoleLogHandlerConfig
+
+  private readonly formatArg = (arg: any) => !arg || isString(arg) ? arg :  JSON.stringify(arg,null,2)
+  
+  /**
+   * Handle log records, transform, push to ES
+   *
+   * @param record
+   */
   handle(record: Record): void {
-    const {level, message, data, category, timestamp} = record
-    
+    const { level, message, data, args, category, timestamp } = record
+
     let logFn: Function
-    if (this.cacheEnabled) {
+    if (this.config.cacheEnabled) {
       logFn = getConsoleLogBinding(record.level)
     } else {
       logFn = getBoundConsoleFn(record.level)
     }
-  
-    logFn(`[${category}] (${level})`, message, ...(Array.isArray(data) ? data : [data]))
-  }
 
-  constructor(
-    public cacheEnabled: boolean = true
-  ) {}
+    asOption([`[${category}]\t(${level})\t${message}`,
+      ...(Array.isArray(args) ? args : [args])])
+      .map(args => args.map(this.formatArg))
+      .map(args => {
+        logFn(
+          ...args
+        )
+      })
+  }
+  
+  /**
+   *
+   * @param {Partial<ConsoleLogHandlerOptions<Record>>} options
+   */
+  constructor(options: Partial<ConsoleLogHandlerOptions<Record>> = {}) {
+    this.config = {
+      ...defaultConfig,
+      ...options
+    }
+  }
 }

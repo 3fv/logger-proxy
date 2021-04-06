@@ -21,6 +21,8 @@ describe("Logger", () => {
     .get()
   
   
+  
+  
   test("category is parsed", () => {
     const mocks = mockConsole()
     const levelMocks = mocks.filter(([prop]) => LevelNames.includes(prop as LevelKind)) as Array<[level:LevelKind, srcFn:Function, mockFn:Function]>
