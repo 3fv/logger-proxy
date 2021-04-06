@@ -36,7 +36,7 @@ export class ConsoleLogHandler<Record extends LogRecord>
  
   readonly config: ConsoleLogHandlerConfig
 
-  private readonly formatArg = (arg: any) => (!arg) ? arg : isObject(arg) ? arg :   this.config.prettyPrint ?  JSON.stringify(arg,null,2) : JSON.stringify(arg)
+  //private readonly formatArg = (arg: any) => (!arg) ? arg : isObject(arg) ? arg :   this.config.prettyPrint ?  JSON.stringify(arg,null,2) : JSON.stringify(arg)
   
   /**
    * Handle log records, transform, push to ES
@@ -55,7 +55,7 @@ export class ConsoleLogHandler<Record extends LogRecord>
 
     asOption([`[${category}]  (${level})  ${message}`,
       ...(Array.isArray(args) ? args : [args])])
-      .map(args => args.map(this.formatArg))
+      //.map(args => args.map(this.formatArg))
       .map(args => {
         console[record.level].apply(
           console,
