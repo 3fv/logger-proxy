@@ -35,7 +35,7 @@ export class ConsoleLogHandler<Record extends LogRecord>
  
   readonly config: ConsoleLogHandlerConfig
 
-  private readonly formatArg = (arg: any) => !arg || isString(arg) ? arg :  JSON.stringify(arg,null,2)
+  private readonly formatArg = (arg: any) => (!arg || isString(arg)) ? arg :  this.config.prettyPrint ?  JSON.stringify(arg,null,2) : JSON.stringify(arg)
   
   /**
    * Handle log records, transform, push to ES
@@ -57,7 +57,7 @@ export class ConsoleLogHandler<Record extends LogRecord>
       .map(args => args.map(this.formatArg))
       .map(args => {
         logFn(
-          ...args
+          args.join(" ")
         )
       })
   }
