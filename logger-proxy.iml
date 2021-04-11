@@ -6,6 +6,9 @@
       <sourceFolder url="file://$MODULE_DIR$/src" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/lib" />
+      <excludePattern pattern="lib" />
+      <excludePattern pattern="node_modules" />
+      <excludePattern pattern="dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
