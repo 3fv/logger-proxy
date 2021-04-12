@@ -1,4 +1,4 @@
-import { LevelKind, LogHandler, LogRecord } from "./types"
+import { LevelKind, Appender, LogRecord } from "./types"
 import { asOption } from "@3fv/prelude-ts"
 import { isObject, isString } from "@3fv/guard"
 
@@ -17,24 +17,24 @@ export function getConsoleLogBinding(level: LevelKind) {
   return consoleLogBindings.get(level)
 }
 
-export interface ConsoleLogHandlerConfig<Record extends LogRecord = any> {
+export interface ConsoleAppenderConfig<Record extends LogRecord = any> {
   cacheEnabled: boolean
   prettyPrint: boolean
 }
 
-export type ConsoleLogHandlerOptions<Record extends LogRecord> = Partial<
-  ConsoleLogHandlerConfig<Record>
+export type ConsoleAppenderOptions<Record extends LogRecord> = Partial<
+  ConsoleAppenderConfig<Record>
 >
 
-const defaultConfig: ConsoleLogHandlerConfig = {
+const defaultConfig: ConsoleAppenderConfig = {
   cacheEnabled: true,
   prettyPrint: true
 }
 
-export class ConsoleLogHandler<Record extends LogRecord>
-  implements LogHandler<Record> {
+export class ConsoleAppender<Record extends LogRecord>
+  implements Appender<Record> {
  
-  readonly config: ConsoleLogHandlerConfig
+  readonly config: ConsoleAppenderConfig
 
   //private readonly formatArg = (arg: any) => (!arg) ? arg : isObject(arg) ? arg :   this.config.prettyPrint ?  JSON.stringify(arg,null,2) : JSON.stringify(arg)
   
@@ -43,7 +43,7 @@ export class ConsoleLogHandler<Record extends LogRecord>
    *
    * @param record
    */
-  handle(record: Record): void {
+  append(record: Record): void {
     const { level, message, data, args, category, timestamp } = record
 
     // let logFn: Function
@@ -55,28 +55,22 @@ export class ConsoleLogHandler<Record extends LogRecord>
 
     asOption([`[${category}]  (${level})  ${message}`,
       ...(Array.isArray(args) ? args : [args])])
-      //.map(args => args.map(this.formatArg))
       .map(args => {
-        console[record.level].apply(
+        asOption(console[record.level])
+          .orElse(() => asOption(console.log))
+          .map(fn => fn.apply(
           console,
           args
-        )
-        // if (typeof process?.stdout !== "undefined") {
-        //   process.stdout.write(args.join('\t') + '\n')
-        // } else {
-        //   console[record.level].apply(
-        //     console,
-        //     args
-        //   )
-        // }
+        ))
+        
       })
   }
   
   /**
    *
-   * @param {Partial<ConsoleLogHandlerOptions<Record>>} options
+   * @param {Partial<ConsoleAppenderOptions<Record>>} options
    */
-  constructor(options: Partial<ConsoleLogHandlerOptions<Record>> = {}) {
+  constructor(options: Partial<ConsoleAppenderOptions<Record>> = {}) {
     this.config = {
       ...defaultConfig,
       ...options

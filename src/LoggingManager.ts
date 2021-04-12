@@ -2,12 +2,13 @@ import {
   Level,
   LevelKind,
   LevelThresholds,
-  LogHandler,
+  Appender,
   LogRecord
 } from "./types"
-import { asOption } from "@3fv/prelude-ts"
-import { ConsoleLogHandler } from "./ConsoleLogHandler"
+import { asOption, Vector } from "@3fv/prelude-ts"
+import { ConsoleAppender } from "./ConsoleAppender"
 import { Logger } from "./Logger"
+
 
 function interpretFilename(filename: string) {
   return asOption(filename.split("/").pop().split("."))
@@ -19,7 +20,7 @@ function interpretFilename(filename: string) {
 
 interface LoggingManagerState<Record extends LogRecord> {
   rootLevel: LevelKind
-  handler: LogHandler<Record>
+  appenders: Array<Appender<Record>>
 }
 
 /**
@@ -29,7 +30,7 @@ export class LoggingManager<Record extends LogRecord = any> {
   readonly loggers = new Map<string, Logger>()
 
   readonly state: LoggingManagerState<Record> = {
-    handler: undefined,
+    appenders: [],
     rootLevel: Level.info
   }
 
@@ -48,21 +49,33 @@ export class LoggingManager<Record extends LogRecord = any> {
   /**
    * Get the current handler
    *
-   * @returns {LogHandler<Record>}
+   * @returns {Appender<Record>}
    */
-  get handler(): LogHandler<Record> {
-    return asOption(this.state.handler).getOrCall(
-      () => (this.state.handler = new ConsoleLogHandler())
+  get appenders(): Array<Appender<Record>> {
+    return asOption(this.state.appenders)
+      .filter(appenders => appenders.length > 0)
+        .getOrCall(
+      () => {
+        this.state.appenders.push(new ConsoleAppender())
+        return this.state.appenders
+      }
+      
+      
     )
   }
 
   /**
    * Set the handler explicitly
    *
-   * @param {LogHandler<Record>} newHandler
+   * @param newAppenders
    */
-  set handler(newHandler: LogHandler<Record>) {
-    this.state.handler = newHandler
+  set appenders(newAppenders: Array<Appender<Record>>) {
+    // WE MUTATE DO TO THE LIKELIHOOD OF SOMEONE HOLDING A REF TO THE ARRAY,
+    // CONVERT TO OBSERVABLE AT SOMEPOINT
+    const persistentAppenders = this.state.appenders
+    persistentAppenders.length = 0
+    persistentAppenders.push(...asOption(newAppenders)
+      .getOrElse([]))
   }
   
   
@@ -73,7 +86,7 @@ export class LoggingManager<Record extends LogRecord = any> {
   
   
   fire(record: LogRecord<Record>) {
-    this.handler.handle(record as Record)
+    this.appenders.forEach(appender => appender.append(record as Record))
   }
 
   getLogger(

@@ -3,7 +3,7 @@
  */
 
 
-export * from "./ConsoleLogHandler"
+export * from "./ConsoleAppender"
 export * from "./LoggingManager"
 export * from "./types"
 export * from "./Logger"
