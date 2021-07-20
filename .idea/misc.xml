@@ -3,5 +3,5 @@
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="JSX" />
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="false" jdk-15="false" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_16" project-jdk-name="Python 3.9" project-jdk-type="Python SDK" />
 </project>
