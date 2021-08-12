@@ -55,8 +55,6 @@ export class ConsoleAppender<Record extends LogRecord>
  
   readonly config: ConsoleAppenderConfig
 
-  //private readonly formatArg = (arg: any) => (!arg) ? arg : isObject(arg) ? arg :   this.config.prettyPrint ?  JSON.stringify(arg,null,2) : JSON.stringify(arg)
-  
   /**
    * Handle log records, transform, push to ES
    *
@@ -64,13 +62,6 @@ export class ConsoleAppender<Record extends LogRecord>
    */
   append(record: Record): void {
     const { level, message, data, args, category, timestamp } = record
-
-    // let logFn: Function
-    // if (this.config.cacheEnabled) {
-    //   logFn = getConsoleLogBinding(record.level)
-    // } else {
-    //   logFn = getBoundConsoleFn(record.level)
-    // }
 
     asOption([`[${category}]  (${level})  ${message}`,
       ...(Array.isArray(args) ? args : [args])])

@@ -1,7 +1,7 @@
 import { LevelKind, LevelNames, LevelThresholds, LogRecord } from "./types"
 import { Level } from "./types"
 import type { LoggingManager } from "./LoggingManager"
-import { isString } from "./util"
+import { isLogLevelKind, isString } from "./util"
 import { pick } from "lodash"
 
 // const baseConsoleLogger = LevelNames.reduce(
@@ -24,6 +24,9 @@ export class Logger {
   log(record: LogRecord)
   log(level: LevelKind, message: string, ...args: any[])
   log(levelOrRecord: LevelKind | LogRecord, ...args: any[]) {
+    // if (isLogLevelKind(levelOrRecord) && ) {
+    //
+    // }
     const record = isString(levelOrRecord)
       ? ({
           ...pick(this, ["category"]),
@@ -46,8 +49,11 @@ export class Logger {
    * @private
    */
   private createLevelLogger(level: LevelKind) {
+    const isEnabled = this.createLevelEnabled(level)
     return (message: string, ...args: any[]) => {
-      this.log(level, message, ...args)
+      if (isEnabled()) {
+        this.log(level, message, ...args)
+      }
     }
   }
   
