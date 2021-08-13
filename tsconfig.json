@@ -11,6 +11,8 @@
 		"declaration": true,
 		"emitDecoratorMetadata": true,
 		"jsx": "react",
+		"skipDefaultLibCheck": true,
+		"skipLibCheck": true,
 		"experimentalDecorators": true,
 		"preserveConstEnums": true,
 		"allowSyntheticDefaultImports": true,

@@ -5,7 +5,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "build": "if [ ! -e index.d.ts ];then mkdir -p lib && cp package.json lib && tsc -b tsconfig.json ${TSC_OPTS}; fi",
+    "init": "mkdir -p lib && cp package.json lib/",
+    "build": "tsc -b tsconfig.json ${TSC_OPTS}",
     "build:watch": "cross-env TSC_OPTS=--watch yarn run build",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -37,34 +38,30 @@
   "homepage": "https://github.com/3fv/logger-proxy#readme",
   "dependencies": {
     "@3fv/deferred": "^1.2.4",
-    "@3fv/guard": "^1.4.24",
+    "@3fv/guard": "^1.4.25",
     "@3fv/prelude-ts": "^0.8.23",
     "bluebird": "^3.7.2",
-    "debug": "^4.3.1",
+    "debug": "^4.3.2",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@types/bluebird": "^3.5.33",
-    "@types/debug": "^4.1.5",
-    "@types/jest": "^26.0.22",
-    "@types/lodash": "^4.14.168",
-    "@types/node": "^14.14.37",
-    "@types/shelljs": "^0.8.8",
+    "@types/bluebird": "^3.5.36",
+    "@types/debug": "^4.1.7",
+    "@types/jest": "^27.0.1",
+    "@types/lodash": "^4.14.172",
+    "@types/node": "^16.6.1",
+    "@types/shelljs": "^0.8.9",
     "cross-env": "^7.0.3",
     "del": "^6.0.0",
-    "glob": "^7.1.6",
-    "jest": "26.6.3",
+    "glob": "^7.1.7",
+    "jest": "27.0.6",
     "lodash": "^4.17.21",
-    "prettier": "^2.2.1",
+    "prettier": "^2.3.2",
     "semver": "^7.3.5",
     "shelljs": "^0.8.4",
     "source-map-support": "^0.5.19",
-    "ts-jest": "26.5.4",
-    "typescript": "^4.2.2",
-    "yargs": "^16.2.0"
-  },
-  "resolutions": {
-    "yargs": "^16.2.0",
-    "y18n": "^4.0.1"
+    "ts-jest": "27.0.4",
+    "typescript": "^4.3.5",
+    "yargs": "^17.1.0"
   }
 }
