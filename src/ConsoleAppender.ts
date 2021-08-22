@@ -62,7 +62,7 @@ export class ConsoleAppender<Record extends LogRecord>
    */
   append(record: Record): void {
     const { level, message, data, args, category, timestamp } = record
-
+    
     asOption([`[${category}]  (${level})  ${message}`,
       ...(Array.isArray(args) ? args : [args])])
       .map(args => {

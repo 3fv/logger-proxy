@@ -80,7 +80,7 @@ export class LoggingManager<Record extends LogRecord = any> {
   
   
   setRootLevel(newLevel: LevelKind) {
-    this.rootLevel = newLevel
+    this.state.rootLevel = newLevel
   }
   
   
