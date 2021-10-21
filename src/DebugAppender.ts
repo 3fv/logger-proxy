@@ -1,5 +1,4 @@
 import { LevelKind, Appender, LogRecord } from "./types"
-import { asOption } from "@3fv/prelude-ts"
 import Debug from "debug"
 
 
@@ -9,15 +8,15 @@ import Debug from "debug"
 /**
  * DebugAppender Configuration
  */
-export interface DebugAppenderConfig<Record extends LogRecord = any> {
-  levels: string[]
+export interface DebugAppenderConfig {
+  levels: LevelKind[]
 }
 
 /**
  * Partial of config, used for shortening instead of Partial<...>
  */
-export type DebugAppenderOptions<Record extends LogRecord> = Partial<
-DebugAppenderConfig<Record>
+export type DebugAppenderOptions = Partial<
+DebugAppenderConfig
 >
 
 /**
@@ -25,7 +24,7 @@ DebugAppenderConfig<Record>
  * @type {DebugAppenderConfig}
  */
 const defaultConfig: DebugAppenderConfig = {
-  levels: ["debug"]
+  levels: ["trace","debug"]
 }
 
 
@@ -63,7 +62,7 @@ export class DebugAppender<Record extends LogRecord>
    * @param record
    */
   append(record: Record): void {
-    const { level, message, data, args, category, timestamp } = record
+    const { level, message, args, category } = record
     
     if (!this.levels.includes(level)){
       return
@@ -76,9 +75,9 @@ export class DebugAppender<Record extends LogRecord>
   
   /**
    *
-   * @param {Partial<DebugAppenderOptions<Record>>} options
+   * @param {Partial<DebugAppenderOptions>} options
    */
-  constructor(options: Partial<DebugAppenderOptions<Record>> = {}) {
+  constructor(options: Partial<DebugAppenderOptions> = {}) {
     this.config = {
       ...defaultConfig,
       ...options
