@@ -44,6 +44,7 @@
     "debug": "^4.3.2",
     "lodash": "^4.17.21"
   },
+  "optionalDependencies": {},
   "devDependencies": {
     "@types/bluebird": "^3.5.36",
     "@types/debug": "^4.1.7",
