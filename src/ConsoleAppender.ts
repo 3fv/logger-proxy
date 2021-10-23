@@ -41,7 +41,7 @@ export type ConsoleAppenderOptions<Record extends LogRecord> = Partial<
  * Default console config
  * @type {ConsoleAppenderConfig}
  */
-const defaultConfig: ConsoleAppenderConfig = {
+export const kDefaultConsoleAppenderConfig: ConsoleAppenderConfig = {
   cacheEnabled: true,
   prettyPrint: true
 }
@@ -82,7 +82,7 @@ export class ConsoleAppender<Record extends LogRecord>
    */
   constructor(options: Partial<ConsoleAppenderOptions<Record>> = {}) {
     this.config = {
-      ...defaultConfig,
+      ...kDefaultConsoleAppenderConfig,
       ...options
     }
   }

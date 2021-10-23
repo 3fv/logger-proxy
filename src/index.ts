@@ -3,6 +3,7 @@
  */
 
 
+export * from "./DebugAppender"
 export * from "./ConsoleAppender"
 export * from "./LoggingManager"
 export * from "./types"
