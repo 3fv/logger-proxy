@@ -1,4 +1,6 @@
-import { LevelKind, Appender, LogRecord } from "./types"
+import { LogRecord } from "./LogRecord"
+import { Appender } from "./Appender"
+import { LevelKind} from "./Level"
 import Debug from "debug"
 import {
   ConsoleAppenderConfig,

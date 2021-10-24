@@ -1,5 +1,5 @@
 import "jest"
-import { LevelKind, LevelNames } from "../types"
+import { LevelKind, LevelNames } from "../Level"
 import { asOption } from "@3fv/prelude-ts"
 import { getLogger } from "../getLogger"
 import { getLoggingManager } from ".."

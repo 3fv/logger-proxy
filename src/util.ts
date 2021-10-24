@@ -1,4 +1,4 @@
-import { LevelKind, LevelNames } from "./types"
+import { LevelKind, LevelNames } from "./Level"
 
 
 export const isString = (s: any): s is string => typeof s === "string"

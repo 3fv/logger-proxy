@@ -1,5 +1,5 @@
-import { LevelKind, LevelNames, LevelThresholds, LogRecord } from "./types"
-import { Level } from "./types"
+import { LogRecord } from "./LogRecord"
+import { LevelKind, LevelNames, LevelThresholds,Level } from "./Level"
 import type { LoggingManager } from "./LoggingManager"
 import { isLogLevelKind, isString } from "./util"
 import { pick } from "lodash"

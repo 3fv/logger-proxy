@@ -11,19 +11,8 @@ export enum Level {
 
 export type LevelName = `${Level}`
 export type LevelKind = LevelName | Level
+
 export const LevelNames:Array<LevelName> = uniq(Object.values(Level))
 export const LevelThresholds = fromPairs(LevelNames.map((level, i) => [level, i])) as Record<LevelKind, number>
 export type LevelEnableFnName = `is${Capitalize<LevelName>}Enabled`
 
-export interface Appender<Record extends LogRecord = any> {
-  append(record:Record): void
-}
-
-export interface LogRecord<Data = any> {
-  category:string
-  timestamp:number
-  level:LevelKind
-  args?: any[]
-  data?:Data
-  message:string
-}

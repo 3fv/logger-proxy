@@ -1,10 +1,8 @@
 import {
-  Level,
-  LevelKind,
-  LevelThresholds,
-  Appender,
   LogRecord
-} from "./types"
+} from "./LogRecord"
+import { Appender } from "./Appender"
+import { Level, LevelKind, LevelThresholds } from "./Level"
 import { asOption, Vector } from "@3fv/prelude-ts"
 import { ConsoleAppender } from "./ConsoleAppender"
 import { Logger } from "./Logger"

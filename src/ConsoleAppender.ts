@@ -1,6 +1,8 @@
-import { LevelKind, Appender, LogRecord } from "./types"
+import { LogRecord } from "./LogRecord"
+import { Appender } from "./Appender"
 import { asOption } from "@3fv/prelude-ts"
-
+import { LevelKind } from "./Level"
+import {Formatter} from "./Formatter"
 
 const consoleLogBindings = new Map<LevelKind, (...args: any[]) => any>()
 
@@ -28,6 +30,7 @@ export function getConsoleLogBinding(level: LevelKind) {
 export interface ConsoleAppenderConfig<Record extends LogRecord = any> {
   cacheEnabled: boolean
   prettyPrint: boolean
+  formatter?: Formatter<string | Array<any>> 
 }
 
 /**
@@ -37,22 +40,35 @@ export type ConsoleAppenderOptions<Record extends LogRecord> = Partial<
   ConsoleAppenderConfig<Record>
 >
 
+export const consoleFormatter:Formatter<Array<any>>  = ({ level, message, data, args, category, timestamp }) => 
+[
+  `[${category}]  (${level})  ${message}`,
+  ...(Array.isArray(args) ? args : [args])
+]
+
+
 /**
  * Default console config
  * @type {ConsoleAppenderConfig}
  */
-export const kDefaultConsoleAppenderConfig: ConsoleAppenderConfig = {
+ export const kDefaultConsoleAppenderConfig: ConsoleAppenderConfig = {
   cacheEnabled: true,
-  prettyPrint: true
+  prettyPrint: true,
+  formatter: consoleFormatter
 }
+
 
 /**
  * Console appender, the simple default appender used
  * everywhere OOB
  */
 export class ConsoleAppender<Record extends LogRecord>
-  implements Appender<Record> {
- 
+  implements Appender<Record>
+{
+  
+  
+  
+  
   readonly config: ConsoleAppenderConfig
 
   /**
@@ -62,20 +78,16 @@ export class ConsoleAppender<Record extends LogRecord>
    */
   append(record: Record): void {
     const { level, message, data, args, category, timestamp } = record
-    
-    asOption([`[${category}]  (${level})  ${message}`,
-      ...(Array.isArray(args) ? args : [args])])
-      .map(args => {
-        asOption(console[record.level])
-          .orElse(() => asOption(console.log))
-          .map(fn => fn.apply(
-          console,
-          args
-        ))
-        
-      })
+    const {formatter = consoleFormatter} = this.config
+    asOption(formatter(record))
+    .map((result) => {
+      const args = Array.isArray(result) ? result : [result]
+      asOption(console[record.level])
+        .orElse(() => asOption(console.log))
+        .map((fn) => fn.apply(console, args))
+    })
   }
-  
+
   /**
    *
    * @param {Partial<ConsoleAppenderOptions<Record>>} options
