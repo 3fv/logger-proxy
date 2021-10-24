@@ -1,13 +1,13 @@
 import { LogRecord } from "./LogRecord"
 import { Appender } from "./Appender"
-import { LevelKind} from "./Level"
+import { LevelKind } from "./Level"
 import Debug from "debug"
 import {
   ConsoleAppenderConfig,
   ConsoleAppender,
   kDefaultConsoleAppenderConfig
 } from "./ConsoleAppender"
-
+import { Formatter } from "./Formatter"
 
 /**
  * DebugAppender Configuration
@@ -20,15 +20,6 @@ export interface DebugAppenderConfig extends ConsoleAppenderConfig {
  * Partial of config, used for shortening instead of Partial<...>
  */
 export type DebugAppenderOptions = Partial<DebugAppenderConfig>
-
-/**
- * Default console config
- * @type {DebugAppenderConfig}
- */
-const defaultConfig: DebugAppenderConfig = {
-  levels: ["trace", "debug"],
-  ...kDefaultConsoleAppenderConfig
-}
 
 const debuggers = new Map<string, Debug.Debugger>()
 
@@ -44,13 +35,68 @@ function getDebug(cat: string) {
   return debug
 }
 
+export const debugFormatter: Formatter<
+  Array<any>,
+  { debug: Debug.Debugger }
+> = (
+  { level, message, data, args: argsIn, category, timestamp },
+  { debug }
+):any[] => {
+  const args = [`(${level})  ${message}`, ...argsIn]
+  args[0] = Debug.coerce(args[0])
+
+  if (typeof args[0] !== "string") {
+    // Anything else let's inspect with %O
+    args.unshift("%O")
+  }
+
+  // Apply any `formatters` transformations
+  let index = 0
+  args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+    // If we encounter an escaped % then don't increase the array index
+    if (match === "%%") {
+      return "%"
+    }
+    index++
+    const formatter = Debug.formatters[format]
+    if (typeof formatter === "function") {
+      const val = args[index]
+      match = formatter.call(debug, val)
+
+      // Now we need to remove `args[index]` since it's inlined in the `format`
+      args.splice(index, 1)
+      index--
+    }
+    return match
+  })
+
+  // Apply env-specific formatting (colors, etc.)
+  Debug.formatArgs.call(debug, args)
+
+  return args
+}
+// [
+//   `[${category}]  (${level})  ${message}`,
+//   ...(Array.isArray(args) ? args : [args])
+// ]
+
+/**
+ * Default console config
+ * @type {DebugAppenderConfig}
+ */
+const defaultConfig: DebugAppenderConfig = {
+  levels: ["trace", "debug"],
+  ...kDefaultConsoleAppenderConfig,
+  formatter: debugFormatter
+}
 /**
  * Debug appender, the simple default appender used
  * everywhere OOB
  */
 export class DebugAppender<Record extends LogRecord>
   extends ConsoleAppender<Record>
-  implements Appender<Record> {
+  implements Appender<Record>
+{
   readonly config: DebugAppenderConfig
 
   get levels() {
@@ -63,25 +109,36 @@ export class DebugAppender<Record extends LogRecord>
    * @param record
    */
   append(record: Record): void {
-    const { level, message, args, category } = record
+    const { level, message, args:argsIn, category } = record
 
-    if (!this.levels.includes(level)) {
-      super.append(record)
-      return 
-    }
+    // if (!this.levels.includes(level)) {
+    //   super.append(record)
+    //   return
+    // }
 
-    const debug = getDebug(category)
-    debug(message, ...args)
+    const debug = getDebug(category) as any
+  let prevTime = debug.prevTime    
+    // Set `diff` timestamp
+			const curr = Number(new Date());
+			const ms = curr - (prevTime || curr);
+			debug.diff = ms;
+			debug.prev = prevTime;
+			debug.curr = curr;
+      debug.prevTime = curr
+    const logFn = debug.log || Debug.log;
+    const args = debugFormatter!(record,{debug})
+    logFn.apply(debug,args)// as any)(...args)
   }
 
   /**
    *
    * @param {Partial<DebugAppenderOptions>} options
    */
-  constructor(options: Partial<DebugAppenderOptions> = {}) {
+  constructor(options: Partial<Omit<DebugAppenderOptions, "formatter">> = {}) {
     super({
       ...defaultConfig,
-      ...options
+      ...options,
+      formatter: debugFormatter
     })
   }
 }

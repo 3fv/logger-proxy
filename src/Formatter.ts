@@ -2,7 +2,7 @@
 import { LogRecord } from "./LogRecord"
 
 export type Formatter<
-Output = string,
+Output,
 RecordOptions extends {} = {},
 Data = any
 > = (entry: LogRecord<Data>, options?: RecordOptions) => Output
