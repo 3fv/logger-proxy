@@ -41,12 +41,14 @@
     "@3fv/guard": "^1.4.26",
     "@3fv/prelude-ts": "^0.8.23",
     "bluebird": "^3.7.2",
+    "chalk": "^4.1.2",
     "debug": "^4.3.2",
     "lodash": "^4.17.21"
   },
   "optionalDependencies": {},
   "devDependencies": {
     "@types/bluebird": "^3.5.36",
+    "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.7",
     "@types/jest": "^27.0.2",
     "@types/lodash": "^4.14.176",

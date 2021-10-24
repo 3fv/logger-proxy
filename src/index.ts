@@ -3,8 +3,8 @@
  */
 
 
-export * from "./DebugAppender"
-export * from "./ConsoleAppender"
+
+export * from "./appenders"
 export * from "./LoggingManager"
 export * from "./Formatter"
 export * from "./LogRecord"

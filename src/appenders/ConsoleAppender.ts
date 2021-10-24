@@ -1,8 +1,8 @@
-import { LogRecord } from "./LogRecord"
-import { Appender } from "./Appender"
+import { LogRecord } from "../LogRecord"
+import { Appender } from "../Appender"
 import { asOption } from "@3fv/prelude-ts"
-import { LevelKind } from "./Level"
-import {Formatter} from "./Formatter"
+import { LevelKind } from "../Level"
+import {Formatter} from "../Formatter"
 
 const consoleLogBindings = new Map<LevelKind, (...args: any[]) => any>()
 

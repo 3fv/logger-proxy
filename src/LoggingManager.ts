@@ -4,7 +4,7 @@ import {
 import { Appender } from "./Appender"
 import { Level, LevelKind, LevelThresholds } from "./Level"
 import { asOption, Vector } from "@3fv/prelude-ts"
-import { ConsoleAppender } from "./ConsoleAppender"
+import { ConsoleAppender } from "./appenders/ConsoleAppender"
 import { Logger } from "./Logger"
 
 
