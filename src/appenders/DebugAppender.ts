@@ -50,6 +50,7 @@ const colorFns: Record<LevelKind, (s: string) => string> = {
 export interface DebugAppenderConfig extends ConsoleAppenderConfig {
   levels: LevelKind[]
   hideDate: boolean
+  timeOnly: boolean
 }
 
 /**
@@ -71,6 +72,10 @@ function getDebug(cat: string) {
   return debug
 }
 
+// const timeFormatter = new Intl.DateTimeFormat('en-US', {
+//   timeStyle: "short"
+// })
+
 /**
  *
  * Get ISO date if `hideDate !== true`
@@ -82,7 +87,13 @@ function getDate({ config }: DebugFormatterContext) {
   if (config.hideDate) {
     return ""
   }
-  return new Date().toISOString()
+  
+  const date = new Date()
+  return config.timeOnly
+    ? date.toLocaleTimeString("default", {
+        hour12: false
+      })
+    : date.toISOString()
 }
 
 /**
@@ -97,23 +108,22 @@ function formatArgs(
   record: LogRecord,
   args: any[]
 ) {
-  const { config, debug } = context
+  const { debug } = context
   const { namespace: name } = debug as any
 
-  if (useColors) {
-    const c = debug.color as any
-    const colorCode = "\u001B[3" + (c < 8 ? c : "8;5;" + c)
-    const prefix = `${colorCode};1m[${name}] \u001B[0m`
+  const prefix = colorFns[record.level](
+    [
+      getDate(context),
+      Debug.humanize(debug.diff),
+      `(` + record.level.toUpperCase() + `)`,
+      `[${name}]`
+    ]
+      .filter(negate(isEmpty))
+      .join(" ")
+  )
+  const msg = [prefix, args[0]].filter(negate(isEmpty)).join(" ")
 
-    args[0] = prefix + args[0].split("\n").join("\n" + prefix)
-    args.push(colorCode + "m+" + Debug.humanize(debug.diff) + "\u001B[0m")
-  } else {
-    args[0] = [name, args[0]].filter(negate(isEmpty)).join(" ")
-  }
-
-  const msg = [getDate(context), args[0]].filter(negate(isEmpty)).join(" ")
-
-  args[0] = colorFns[record.level](msg)
+  args[0] = msg
 }
 
 /**
@@ -136,7 +146,7 @@ export const debugFormatter: Formatter<Array<any>, DebugFormatterContext> = (
   { debug, config }
 ): any[] => {
   const { level, message, data, args: argsIn, category, timestamp } = record
-  const args = [colorFns[level](`(` + level.toUpperCase() + `)`) + ` ${message}`, ...argsIn]
+  const args = [message, ...argsIn]
   args[0] = Debug.coerce(args[0])
 
   if (typeof args[0] !== "string") {
@@ -181,6 +191,7 @@ export const debugFormatter: Formatter<Array<any>, DebugFormatterContext> = (
 const defaultConfig: DebugAppenderConfig = {
   levels: ["trace", "debug"],
   hideDate: false,
+  timeOnly: true,
   ...kDefaultConsoleAppenderConfig,
   formatter: debugFormatter
 }
