@@ -41,7 +41,7 @@ export const debugFormatter: Formatter<
 > = (
   { level, message, data, args: argsIn, category, timestamp },
   { debug }
-):any[] => {
+): any[] => {
   const args = [`(${level})  ${message}`, ...argsIn]
   args[0] = Debug.coerce(args[0])
 
@@ -109,7 +109,7 @@ export class DebugAppender<Record extends LogRecord>
    * @param record
    */
   append(record: Record): void {
-    const { level, message, args:argsIn, category } = record
+    const { level, message, args: argsIn, category } = record
 
     // if (!this.levels.includes(level)) {
     //   super.append(record)
@@ -117,17 +117,17 @@ export class DebugAppender<Record extends LogRecord>
     // }
 
     const debug = getDebug(category) as any
-  let prevTime = debug.prevTime    
+    let prevTime = debug.prevTime
     // Set `diff` timestamp
-			const curr = Number(new Date());
-			const ms = curr - (prevTime || curr);
-			debug.diff = ms;
-			debug.prev = prevTime;
-			debug.curr = curr;
-      debug.prevTime = curr
-    const logFn = debug.log || Debug.log;
-    const args = debugFormatter!(record,{debug})
-    logFn.apply(debug,args)// as any)(...args)
+    const curr = Number(new Date())
+    const ms = curr - (prevTime || curr)
+    debug.diff = ms
+    debug.prev = prevTime
+    debug.curr = curr
+    debug.prevTime = curr
+    const logFn = debug.log || Debug.log
+    const args = debugFormatter!(record, { debug })
+    logFn.apply(debug, args) // as any)(...args)
   }
 
   /**
