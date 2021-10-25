@@ -1,13 +1,13 @@
-import { LogRecord } from "../LogRecord"
-import { Appender } from "../Appender"
-import { LevelKind } from "../Level"
+import type { LogRecord } from "../LogRecord"
+import type { Appender } from "../Appender"
+import type { LevelKind } from "../Level"
 import Debug from "debug"
 import {
   ConsoleAppenderConfig,
   ConsoleAppender,
   kDefaultConsoleAppenderConfig
 } from "./ConsoleAppender"
-import { Formatter } from "../Formatter"
+import type { Formatter } from "../Formatter"
 import { isEmpty, negate } from "lodash"
 import type ChalkType from "chalk"
 import { asOption } from "@3fv/prelude-ts"
@@ -28,9 +28,6 @@ const makeColorFn = (fn: (chalk: ChalkType.Chalk, s: string) => string) => {
   if (!useColors) {
     return (s: string) => s
   }
-
-  //const fn = chalk[color] as Function
-  //assert(isFunction(fn), `chalk.${color} is not a function`)
 
   return (s: string) => fn(chalk, s)
 }
@@ -87,7 +84,7 @@ function getDate({ config }: DebugFormatterContext) {
   if (config.hideDate) {
     return ""
   }
-  
+
   const date = new Date()
   return config.timeOnly
     ? date.toLocaleTimeString("default", {

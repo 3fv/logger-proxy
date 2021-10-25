@@ -1,5 +1,5 @@
 export * from "./Appender"
-// export * from './FileAppender';
+export * from "./FileAppender"
 export * from "./Formatter"
 export * from "./Level"
 export * from "./LogRecord"

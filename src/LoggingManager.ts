@@ -1,11 +1,11 @@
-import { LogRecord } from "./LogRecord"
-import { Appender } from "./Appender"
-import { Level, LevelKind, LevelThresholds } from "./Level"
-import { asOption, Vector } from "@3fv/prelude-ts"
+import { asOption } from "@3fv/prelude-ts"
+import type { Appender } from "./Appender"
 import { ConsoleAppender } from "./appenders/ConsoleAppender"
+import { Level, LevelKind, LevelThresholds } from "./Level"
 import { Logger, LoggerOptions } from "./Logger"
+import type { LogRecord } from "./LogRecord"
 
-interface LoggingManagerState<Record extends LogRecord> {
+export interface LoggingManagerState<Record extends LogRecord> {
   rootLevel: LevelKind
   appenders: Array<Appender<Record>>
 }

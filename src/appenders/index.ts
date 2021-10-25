@@ -1,2 +1,2 @@
-export * from './ConsoleAppender';
-export * from './DebugAppender';
+export * from "./ConsoleAppender"
+export * from "./DebugAppender"

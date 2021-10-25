@@ -1,8 +1,8 @@
 import { assign, defaults } from "lodash"
 import * as Path from "path"
 import * as Fs from "fs"
-import { LogRecord } from "./LogRecord"
-import { Appender } from "./Appender"
+import type { LogRecord } from "./LogRecord"
+import type { Appender } from "./Appender"
 import { asOption, Future } from "@3fv/prelude-ts"
 import { get } from "lodash/fp"
 import { Buffer } from "buffer"
@@ -34,7 +34,8 @@ export type FileAppenderOptions<Record extends LogRecord = any> = Partial<
 >
 
 export class FileAppender<Record extends LogRecord>
-  implements Appender<Record> {
+  implements Appender<Record>
+{
   readonly config: FileAppenderConfig<Record>
 
   private readonly state: {
@@ -54,7 +55,6 @@ export class FileAppender<Record extends LogRecord>
     readyDeferred: undefined
   }
 
-
   isReady() {
     return this.state.ready
   }
@@ -73,19 +73,20 @@ export class FileAppender<Record extends LogRecord>
     if (!!state.readyDeferred) {
       return state.readyDeferred.promise
     }
-  
-    const deferred = this.state.readyDeferred = new Deferred<FileAppender<Record>>()
+
+    const deferred = (this.state.readyDeferred = new Deferred<
+      FileAppender<Record>
+    >())
     try {
-    
       const { filename } = this
       const file = await FsAsync.open(filename, "a")
-    
+
       assign(state, {
         filename,
         file,
         ready: true
       })
-    
+
       deferred.resolve(this)
       return deferred.promise
     } catch (err) {
@@ -99,7 +100,7 @@ export class FileAppender<Record extends LogRecord>
       return deferred.promise
     }
   }
-  
+
   /**
    * Close the handler
    *
@@ -114,28 +115,27 @@ export class FileAppender<Record extends LogRecord>
         return Promise.resolve()
       })
   }
-  
+
   get queue() {
     return this.state.queue
   }
-  
+
   get file() {
     return this.state.file
   }
-  
+
   get flushing() {
     return this.state.flushing
   }
-  
+
   get filename() {
     return (this.state.filename = this.state.filename ?? this.config.filename)
   }
-  
+
   /**
    * Appends the log queue records to the file
    */
   private flush() {
-    
     Future.do(async () => {
       await this.whenReady()
       this.state.flushing = true
@@ -145,10 +145,10 @@ export class FileAppender<Record extends LogRecord>
           throw Error(`${this.filename} was not opened properly`)
         }
         while (this.queue.length) {
-          const buf:Buffer = this.queue.shift()
+          const buf: Buffer = this.queue.shift()
           await this.file.appendFile(buf, "utf-8")
         }
-    
+
         await this.file.datasync()
       } catch (err) {
         console.error(`Failed to append file ${this.filename}`, err)
@@ -158,7 +158,6 @@ export class FileAppender<Record extends LogRecord>
           queueMicrotask(() => this.flush())
         }
       }
-  
     })
   }
 
@@ -185,7 +184,7 @@ export class FileAppender<Record extends LogRecord>
       queue.push(Buffer.from(data + "\n", "utf-8"))
       this.flush()
     } catch (err) {
-      console.warn(`Failed to synchronize `,err)
+      console.warn(`Failed to synchronize `, err)
     }
   }
 
@@ -195,11 +194,11 @@ export class FileAppender<Record extends LogRecord>
    */
   constructor(options: Partial<FileAppenderOptions<Record>> = {}) {
     this.config = applyConfigDefaults(options)
-    
-    assign(this.state,{
+
+    assign(this.state, {
       filename: this.config.filename
     })
-    
+
     queueMicrotask(() => {
       this.setup()
         .then(({ state }) => {

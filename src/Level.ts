@@ -12,7 +12,8 @@ export enum Level {
 export type LevelName = `${Level}`
 export type LevelKind = LevelName | Level
 
-export const LevelNames:Array<LevelName> = uniq(Object.values(Level))
-export const LevelThresholds = fromPairs(LevelNames.map((level, i) => [level, i])) as Record<LevelKind, number>
+export const LevelNames: Array<LevelName> = uniq(Object.values(Level))
+export const LevelThresholds = fromPairs(
+  LevelNames.map((level, i) => [level, i])
+) as Record<LevelKind, number>
 export type LevelEnableFnName = `is${Capitalize<LevelName>}Enabled`
-

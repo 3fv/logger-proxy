@@ -1,19 +1,23 @@
-import { LogRecord } from "./LogRecord"
-import { LevelKind, LevelNames, LevelThresholds, Level } from "./Level"
-import type { LoggingManager } from "./LoggingManager"
-import { isLogLevelKind, isString } from "./util"
-import { pick, toLower } from "lodash"
-import { asOption, Predicate } from "@3fv/prelude-ts"
 import { assert, isDefined, isNumber } from "@3fv/guard"
-
+import { asOption } from "@3fv/prelude-ts"
+import { pick } from "lodash"
+import { LevelKind, LevelThresholds } from "./Level"
+import type { LoggingManager } from "./LoggingManager"
+import type { LogRecord } from "./LogRecord"
+import { isLogLevelKind, isString } from "./util"
 
 export interface LoggerOptions {
   categoryInterpolator: CategoryInterpolator
 }
 
-export type CategoryInterpolator = (inCategory: string, options?: LoggerOptions) => string
+export type CategoryInterpolator = (
+  inCategory: string,
+  options?: LoggerOptions
+) => string
 
-export const filenameCategoryInterpolator:CategoryInterpolator = (filename: string) => {
+export const filenameCategoryInterpolator: CategoryInterpolator = (
+  filename: string
+) => {
   return asOption(filename.split("/").pop().split("."))
     .map((parts) =>
       (parts.length > 1 ? parts.slice(0, parts.length - 1) : parts).join(".")
@@ -46,7 +50,6 @@ export interface LoggerState {
 }
 
 export class Logger {
-
   readonly state: LoggerState = {
     overrideLevel: null
   }
@@ -120,10 +123,9 @@ export class Logger {
     return () => {
       const { rootThreshold } = this.manager
 
-      const categoryThresholds = [
-        rootThreshold,
-        this.overrideThreshold
-      ].filter(isNumber)
+      const categoryThresholds = [rootThreshold, this.overrideThreshold].filter(
+        isNumber
+      )
 
       const categoryThreshold = Math.min(...categoryThresholds)
 
@@ -151,24 +153,20 @@ export class Logger {
     readonly manager: LoggingManager,
     readonly category: string,
     readonly options: LoggerOptions
-  ) {
-    
-  }
+  ) {}
 
-  static hydrateOptions(options: Partial<LoggerOptions> = {}):LoggerOptions {
+  static hydrateOptions(options: Partial<LoggerOptions> = {}): LoggerOptions {
     return {
       ...defaultLoggerOptions,
       ...options
     }
   }
 
-
   static interoplateCategory(category: string, options: LoggerOptions) {
     options = {
       ...defaultLoggerOptions,
       ...options
     }
-    return options.categoryInterpolator(category,options)
-
+    return options.categoryInterpolator(category, options)
   }
 }
