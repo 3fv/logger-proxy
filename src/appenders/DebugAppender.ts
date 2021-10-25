@@ -45,7 +45,6 @@ const colorFns: Record<LevelKind, (s: string) => string> = {
  * DebugAppender Configuration
  */
 export interface DebugAppenderConfig extends ConsoleAppenderConfig {
-  levels: LevelKind[]
   hideDate: boolean
   timeOnly: boolean
 }
@@ -186,7 +185,6 @@ export const debugFormatter: Formatter<Array<any>, DebugFormatterContext> = (
  * @type {DebugAppenderConfig}
  */
 const defaultConfig: DebugAppenderConfig = {
-  levels: ["trace", "debug"],
   hideDate: false,
   timeOnly: true,
   ...kDefaultConsoleAppenderConfig,
@@ -202,9 +200,6 @@ export class DebugAppender<Record extends LogRecord>
 {
   readonly config: DebugAppenderConfig
 
-  get levels() {
-    return this.config?.levels ?? defaultConfig.levels
-  }
 
   /**
    * Handle log records, transform, push to ES

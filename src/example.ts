@@ -1,7 +1,8 @@
-import { DebugAppender, getLogger } from "."
+import { getLogger } from "./getLogger"
 import { LevelNames } from "./Level"
 import { getLoggingManager } from "./LoggingManager"
 import Debug from "debug"
+import { DebugAppender } from "./appenders"
 
 process.env.DEBUG = "*"
 Debug.enable("*")
@@ -10,7 +11,7 @@ const manager = getLoggingManager()
 
 manager.appenders = [
   new DebugAppender({
-    levels: [...LevelNames]
+    
   })
 ]
 
