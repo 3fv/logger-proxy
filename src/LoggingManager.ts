@@ -1,20 +1,9 @@
-import {
-  LogRecord
-} from "./LogRecord"
+import { LogRecord } from "./LogRecord"
 import { Appender } from "./Appender"
 import { Level, LevelKind, LevelThresholds } from "./Level"
 import { asOption, Vector } from "@3fv/prelude-ts"
 import { ConsoleAppender } from "./appenders/ConsoleAppender"
-import { Logger } from "./Logger"
-
-
-function interpretFilename(filename: string) {
-  return asOption(filename.split("/").pop().split("."))
-    .map((parts) =>
-      (parts.length > 1 ? parts.slice(0, parts.length - 1) : parts).join(".")
-    )
-    .get()
-}
+import { Logger, LoggerOptions } from "./Logger"
 
 interface LoggingManagerState<Record extends LogRecord> {
   rootLevel: LevelKind
@@ -51,15 +40,11 @@ export class LoggingManager<Record extends LogRecord = any> {
    */
   get appenders(): Array<Appender<Record>> {
     return asOption(this.state.appenders)
-      .filter(appenders => appenders.length > 0)
-        .getOrCall(
-      () => {
+      .filter((appenders) => appenders.length > 0)
+      .getOrCall(() => {
         this.state.appenders.push(new ConsoleAppender())
         return this.state.appenders
-      }
-      
-      
-    )
+      })
   }
 
   /**
@@ -72,32 +57,28 @@ export class LoggingManager<Record extends LogRecord = any> {
     // CONVERT TO OBSERVABLE AT SOMEPOINT
     const persistentAppenders = this.state.appenders
     persistentAppenders.length = 0
-    persistentAppenders.push(...asOption(newAppenders)
-      .getOrElse([]))
+    persistentAppenders.push(...asOption(newAppenders).getOrElse([]))
   }
-  
-  
+
   setRootLevel(newLevel: LevelKind) {
     this.state.rootLevel = newLevel
   }
-  
-  
-  
+
   fire(record: LogRecord<Record>) {
-    this.appenders.forEach(appender => appender.append(record as Record))
+    this.appenders.forEach((appender) => appender.append(record as Record))
   }
 
   getLogger(
     categoryOrFilename: string,
-    shouldInterpretFilename: boolean = true
+    inOptions: Partial<LoggerOptions> = {}
   ): Logger {
-    const category = shouldInterpretFilename
-      ? interpretFilename(categoryOrFilename)
-      : categoryOrFilename
+    const options = Logger.hydrateOptions(inOptions)
+    const category = Logger.interoplateCategory(categoryOrFilename, options)
+
     return asOption(category)
       .map((category) => this.loggers.get(category))
       .getOrCall(() => {
-        const logger = new Logger(this, category)
+        const logger = new Logger(this, category, options)
         this.loggers.set(category, logger)
         return logger
       })

@@ -1,7 +1,10 @@
 import { getLoggingManager } from "./LoggingManager"
 import { Logger } from "./Logger"
+import { LoggerOptions } from "."
 
-
-export function getLogger(category: string, interpretFilename: boolean = true):Logger {
-  return getLoggingManager().getLogger(category,interpretFilename)
+export function getLogger(
+  category: string,
+  options: Partial<LoggerOptions> = {}
+): Logger {
+  return getLoggingManager().getLogger(category, options)
 }

@@ -1,45 +1,97 @@
 import { LogRecord } from "./LogRecord"
-import { LevelKind, LevelNames, LevelThresholds,Level } from "./Level"
+import { LevelKind, LevelNames, LevelThresholds, Level } from "./Level"
 import type { LoggingManager } from "./LoggingManager"
 import { isLogLevelKind, isString } from "./util"
-import { pick } from "lodash"
+import { pick, toLower } from "lodash"
+import { asOption, Predicate } from "@3fv/prelude-ts"
+import { assert, isDefined, isNumber } from "@3fv/guard"
 
-// const baseConsoleLogger = LevelNames.reduce(
-//   (logger: any, level: string) => ({
-//     ...logger,
-//     [level]: consoleLevelToFn(level),
-//     ["is" + level[0].toUpperCase() + level.substr(1) + "Enabled"]: () => true
-//   }),
-//   { name: undefined } as any
-// ) as ILogger
-//
+
+export interface LoggerOptions {
+  categoryInterpolator: CategoryInterpolator
+}
+
+export type CategoryInterpolator = (inCategory: string, options?: LoggerOptions) => string
+
+export const filenameCategoryInterpolator:CategoryInterpolator = (filename: string) => {
+  return asOption(filename.split("/").pop().split("."))
+    .map((parts) =>
+      (parts.length > 1 ? parts.slice(0, parts.length - 1) : parts).join(".")
+    )
+    .get()
+}
+
+export const defaultLoggerOptions: LoggerOptions = {
+  categoryInterpolator: filenameCategoryInterpolator
+}
+
+export function toLogRecord(
+  logger: Logger,
+  levelOrRecord: LevelKind | LogRecord,
+  args: any[]
+) {
+  return isString(levelOrRecord)
+    ? ({
+        ...pick(logger, ["category"]),
+        timestamp: Date.now(),
+        message: args[0],
+        level: levelOrRecord,
+        args: args.slice(1)
+      } as LogRecord)
+    : levelOrRecord
+}
+
 export interface LoggerState {
   overrideLevel?: LevelKind
 }
 
 export class Logger {
-  readonly state: LoggerState = {}
-  
 
+  readonly state: LoggerState = {
+    overrideLevel: null
+  }
+
+  get overrideLevel(): LevelKind {
+    return asOption(this.state.overrideLevel)
+      .filter(isLogLevelKind) //Predicate.of<LevelKind>(isString).and(isLogLevelKind))
+      .getOrNull()
+  }
+
+  get overrideThreshold() {
+    return asOption(this.overrideLevel)
+      .map((level) => LevelThresholds[level])
+      .getOrNull()
+  }
+
+  setOverrideLevel(inOverrideLevel: LevelKind) {
+    const overrideLevel = (
+      !inOverrideLevel ? null : inOverrideLevel.toLocaleLowerCase()
+    ) as LevelKind
+
+    assert(
+      !isDefined(overrideLevel) || isLogLevelKind(overrideLevel),
+      `Invalid override level, must be a log level, all lower case`
+    )
+
+    Object.assign(this.state, {
+      overrideLevel
+    })
+
+    return this
+  }
+
+  /**
+   * Base logging function
+   *
+   * @param record
+   */
   log(record: LogRecord)
   log(level: LevelKind, message: string, ...args: any[])
   log(levelOrRecord: LevelKind | LogRecord, ...args: any[]) {
-    // if (isLogLevelKind(levelOrRecord) && ) {
-    //
-    // }
-    const record = isString(levelOrRecord)
-      ? ({
-          ...pick(this, ["category"]),
-        timestamp: Date.now(),
-        message: args[0],
-          level: levelOrRecord,
-        args: args.slice(1)
-        } as LogRecord)
-      : levelOrRecord
-
+    const record = toLogRecord(this, levelOrRecord, args)
     this.manager.fire(record)
   }
-  
+
   /**
    * Factory for the log
    * level functions
@@ -56,7 +108,7 @@ export class Logger {
       }
     }
   }
-  
+
   /**
    * Factory for is<Level>Enabled
    *
@@ -66,86 +118,57 @@ export class Logger {
    */
   private createLevelEnabled(level: LevelKind) {
     return () => {
-      const {rootThreshold} = this.manager
-      const testThreshold = LevelThresholds[level]
-      
-      return testThreshold >= rootThreshold
+      const { rootThreshold } = this.manager
+
+      const categoryThresholds = [
+        rootThreshold,
+        this.overrideThreshold
+      ].filter(isNumber)
+
+      const categoryThreshold = Math.min(...categoryThresholds)
+
+      const recordThreshold = LevelThresholds[level]
+
+      return recordThreshold >= categoryThreshold
     }
   }
-  
+
   readonly trace = this.createLevelLogger("trace")
   readonly debug = this.createLevelLogger("debug")
   readonly info = this.createLevelLogger("info")
   readonly warn = this.createLevelLogger("warn")
   readonly error = this.createLevelLogger("error")
   readonly fatal = this.createLevelLogger("fatal")
-  
+
   readonly isTraceEnabled = this.createLevelEnabled("trace")
   readonly isDebugEnabled = this.createLevelEnabled("debug")
   readonly isInfoEnabled = this.createLevelEnabled("info")
   readonly isWarnEnabled = this.createLevelEnabled("warn")
   readonly isErrorEnabled = this.createLevelEnabled("error")
   readonly isFatalEnabled = this.createLevelEnabled("fatal")
-  
+
   constructor(
-    public readonly manager: LoggingManager,
-    public readonly category: string
-  ) {}
+    readonly manager: LoggingManager,
+    readonly category: string,
+    readonly options: LoggerOptions
+  ) {
+    
+  }
+
+  static hydrateOptions(options: Partial<LoggerOptions> = {}):LoggerOptions {
+    return {
+      ...defaultLoggerOptions,
+      ...options
+    }
+  }
+
+
+  static interoplateCategory(category: string, options: LoggerOptions) {
+    options = {
+      ...defaultLoggerOptions,
+      ...options
+    }
+    return options.categoryInterpolator(category,options)
+
+  }
 }
-
-//
-//
-// /**
-//  * Create the base line logger for
-//  * a category
-//  *
-//  * @returns {any}
-//  * @param fullName
-//  */
-// const createWrappedLogger = (fullName: string) => {
-//
-//
-//   const cache = new Map<Level, Function>()
-//   const getFn = (level: Level) => {
-//     if (!cache.has(level)) {
-//       cache.set(level, (...args) => {
-//         const manager = getLoggingManager()
-//         if (!!manager && manager.onMessage({
-//           name,
-//           level,
-//           timestamp: Date.now(),
-//           args,
-//         }) === false) {
-//
-//         }
-//
-//
-//         const logFn = baseConsoleLogger[level]
-//         logFn(`[${name}] (${level})`, ...args)
-//       })
-//     }
-//     return cache.get(level)
-//   }
-//   return new Proxy(baseConsoleLogger, {
-//     get(target: ILogger, p: PropertyKey, receiver: any): any {
-//       const value = target[p]
-//       if (!isString(p) || !value || typeof value !== "function") {
-//         return value
-//       }
-//       const fn = value as (...args: any[]) => void
-//
-//
-//       if (LevelNames.includes(p as any)) {
-//         return getFn(p as Level)
-//       } else {
-//         return value
-//       }
-//     }
-//   })
-// }
-
-// export function getLogger(
-//   name: string
-// ) {
-//   return createWrappedLogger(name)
-// }
