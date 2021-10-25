@@ -18,11 +18,19 @@ export type CategoryInterpolator = (
 export const filenameCategoryInterpolator: CategoryInterpolator = (
   filename: string
 ) => {
-  return asOption(filename.split("/").pop().split("."))
-    .map((parts) =>
-      (parts.length > 1 ? parts.slice(0, parts.length - 1) : parts).join(".")
+  const allParts = filename.split("/")
+  const rootIndex = Math.max(
+    ...["src", "lib"].map((name) => allParts.indexOf(name))
+  )
+  const parts = rootIndex === -1 ? [allParts.pop()] : allParts.slice(rootIndex + 1)
+  const category = asOption(parts.join(":"))
+    .flatMap((cat) =>
+      asOption(cat.lastIndexOf(".")).map((index) =>
+        index === -1 ? cat : cat.slice(0, index)
+      )
     )
     .get()
+  return category
 }
 
 export const defaultLoggerOptions: LoggerOptions = {
