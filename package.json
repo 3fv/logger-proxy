@@ -15,7 +15,7 @@
     "release": "yarn build  && yarn version --patch --non-interactive"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "restricted"
   },
   "repository": {
     "type": "git",
