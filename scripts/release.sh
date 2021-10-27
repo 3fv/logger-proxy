@@ -10,13 +10,14 @@ fi
 git push --tags
 echo Publishing
 
-cp README.md package.json lib/
+cat package.json | jq 'del(.scripts)' > lib/package.json
+cp README.md lib/
 #cd src
 #find ./ -name "*.ts" | xargs -IsrcFile cp srcFile ../lib
 
 pushd lib
-yarn publish . --non-interactive --tag ${NPM_VERSION}
-cp package.json ../
+yarn publish . --from-package --non-interactive --tag ${NPM_VERSION}
+#cp package.json ../
 popd
 git push 
 echo "Successfully released version ${NPM_VERSION}!"
