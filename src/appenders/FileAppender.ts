@@ -1,8 +1,8 @@
 import { assign, defaults } from "lodash"
 import * as Path from "path"
 import * as Fs from "fs"
-import type { LogRecord } from "./LogRecord"
-import type { Appender } from "./Appender"
+import type { LogRecord } from "../LogRecord"
+import type { Appender } from "../Appender"
 import { asOption, Future } from "@3fv/prelude-ts"
 import { get } from "lodash/fp"
 import { Buffer } from "buffer"
@@ -16,6 +16,7 @@ const debug = Debug("3fv:logger:FileAppender")
 const getDefaultConfig = (): FileAppenderConfig => ({
   filename: Path.join(process.cwd(), "app.log"),
   prettyPrint: process.env.NODE_ENV !== "production",
+  maxSize: -1,
   sync: false
 })
 
@@ -26,6 +27,7 @@ function applyConfigDefaults(options: FileAppenderOptions): FileAppenderConfig {
 export interface FileAppenderConfig<Record extends LogRecord = any> {
   filename: string
   prettyPrint: boolean
+  maxSize: number
   sync: boolean
 }
 
@@ -45,11 +47,13 @@ export class FileAppender<Record extends LogRecord>
     queue: Array<Buffer>
     ready: boolean
     error?: Error
+    currentSize: number
     readyDeferred: Deferred<FileAppender<Record>>
   } = {
     filename: undefined,
     file: undefined,
     ready: false,
+    currentSize: 0,
     flushing: false,
     queue: [],
     readyDeferred: undefined
@@ -136,9 +140,11 @@ export class FileAppender<Record extends LogRecord>
    * Appends the log queue records to the file
    */
   private flush() {
+    const {state} = this
     Future.do(async () => {
       await this.whenReady()
-      this.state.flushing = true
+      
+      state.flushing = true
       try {
         const { file } = this
         if (!file) {
@@ -147,6 +153,13 @@ export class FileAppender<Record extends LogRecord>
         while (this.queue.length) {
           const buf: Buffer = this.queue.shift()
           await this.file.appendFile(buf, "utf-8")
+          state.currentSize += buf.byteLength
+          const {maxSize} = this.config
+          if (maxSize > 0 && state.currentSize >= maxSize) {
+            await this.file.truncate(0)
+            await this.file.appendFile("Truncated file at " + new Date().toISOString() + "\n")
+          }
+
         }
 
         await this.file.datasync()
