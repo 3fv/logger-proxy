@@ -1,5 +1,4 @@
 export * from "./Appender"
-export * from "./appenders/FileAppender"
 export * from "./Formatter"
 export * from "./Level"
 export * from "./LogRecord"
