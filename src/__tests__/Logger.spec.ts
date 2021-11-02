@@ -36,7 +36,7 @@ describe("Logger", () => {
     ) as Array<[level: LevelKind, srcFn: Function, mockFn: Function]>
     const log = getLogger(__filename)
 
-    expect(log.category).toBe("Logger.spec")
+    expect(log.category).toBe("__tests__:Logger.spec")
   })
 
   test("console is default", () => {

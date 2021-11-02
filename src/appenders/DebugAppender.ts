@@ -47,6 +47,9 @@ const colorFns: Record<LevelKind, (s: string) => string> = {
 export interface DebugAppenderConfig extends ConsoleAppenderConfig {
   hideDate: boolean
   timeOnly: boolean
+  useConsole: boolean
+  useStdout: boolean
+
 }
 
 /**
@@ -187,6 +190,8 @@ export const debugFormatter: Formatter<Array<any>, DebugFormatterContext> = (
 const defaultConfig: DebugAppenderConfig = {
   hideDate: false,
   timeOnly: true,
+  useConsole: false,
+  useStdout: true,
   ...kDefaultConsoleAppenderConfig,
   formatter: debugFormatter
 }
@@ -225,7 +230,14 @@ export class DebugAppender<Record extends LogRecord>
     debug.prevTime = curr
     const logFn = debug.log || Debug.log
     const args = debugFormatter!(record, { debug, config: this.config })
-    logFn.apply(debug, args) // as any)(...args)
+    
+    if (this.config.useConsole) {
+      super.write(level, ...args)
+    }
+
+    if (this.config.useStdout) {
+      logFn.apply(debug, args) 
+    }
   }
 
   /**
