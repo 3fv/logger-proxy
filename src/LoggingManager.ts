@@ -1,5 +1,6 @@
 import { isString } from "@3fv/guard"
 import { asOption } from "@3fv/prelude-ts"
+import { isEmpty, negate } from "lodash"
 import type { Appender } from "./Appender"
 import { ConsoleAppender } from "./appenders/ConsoleAppender"
 import { Level, LevelKind, LevelThresholds } from "./Level"
@@ -16,6 +17,15 @@ export interface LoggingManagerState<Record extends LogRecord> {
   thresholdOverrides: Array<ThresholdOverride>
 }
 
+function parseThresholdOverridePatterns(value: string, level: LevelKind = "debug"):ThresholdOverride[] {
+  return value.split(",").map(s => [new RegExp(s), level] as ThresholdOverride)
+}
+
+export const kEnvThresholdOverrides = asOption(process.env.DEBUG_PATTERNS)
+  .filter(negate(isEmpty))
+  .map(parseThresholdOverridePatterns)
+  .getOrElse([])
+
 /**
  * Logging manager
  */
@@ -26,7 +36,7 @@ export class LoggingManager<Record extends LogRecord = any> {
   readonly state: LoggingManagerState<Record> = {
     appenders: [],
     rootLevel: Level.info,
-    thresholdOverrides: []
+    thresholdOverrides: kEnvThresholdOverrides
   }
 
   
@@ -127,7 +137,9 @@ export class LoggingManager<Record extends LogRecord = any> {
       })
   }
 
-  private constructor() {}
+  private constructor() {
+
+  }
 
   private static manager: LoggingManager
 
