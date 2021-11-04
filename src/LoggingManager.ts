@@ -1,3 +1,4 @@
+import { isString } from "@3fv/guard"
 import { asOption } from "@3fv/prelude-ts"
 import type { Appender } from "./Appender"
 import { ConsoleAppender } from "./appenders/ConsoleAppender"
@@ -5,21 +6,30 @@ import { Level, LevelKind, LevelThresholds } from "./Level"
 import { Logger, LoggerOptions } from "./Logger"
 import type { LogRecord } from "./LogRecord"
 
+export type CategoryMatch = RegExp | string
+
+export type ThresholdOverride = [match: CategoryMatch, level: LevelKind]
+
 export interface LoggingManagerState<Record extends LogRecord> {
   rootLevel: LevelKind
   appenders: Array<Appender<Record>>
+  thresholdOverrides: Array<ThresholdOverride>
 }
 
 /**
  * Logging manager
  */
 export class LoggingManager<Record extends LogRecord = any> {
+  
   readonly loggers = new Map<string, Logger>()
 
   readonly state: LoggingManagerState<Record> = {
     appenders: [],
-    rootLevel: Level.info
+    rootLevel: Level.info,
+    thresholdOverrides: []
   }
+
+  
 
   get rootLevel() {
     return this.state.rootLevel
@@ -47,6 +57,10 @@ export class LoggingManager<Record extends LogRecord = any> {
       })
   }
 
+  get thresholdOverrides() {
+    return this.state.thresholdOverrides
+  }
+
   /**
    * Set the handler explicitly
    *
@@ -60,9 +74,38 @@ export class LoggingManager<Record extends LogRecord = any> {
     persistentAppenders.push(...asOption(newAppenders).getOrElse([]))
   }
 
+  clearThresholdOverrides() {
+    this.state.thresholdOverrides.length = 0
+    return this
+  }
+
+  addThresholdOverrides(...overrides: Array<ThresholdOverride>) {
+    this.state.thresholdOverrides.push(...overrides)
+    return this
+  }
+
+  /**
+   * Check for any matching threshold overrides
+   * 
+   * @param category 
+   */
+  determineThresholdOverride(category: string) {
+    const override = this.thresholdOverrides.find(([match]) => isString(match) ? match === category : match.test(category))
+    if (!override) {
+      return null
+    } else {
+      const [,level] = override
+      return LevelThresholds[level]
+    }
+    
+  }
+  
   setRootLevel(newLevel: LevelKind) {
     this.state.rootLevel = newLevel
   }
+
+  
+  
 
   fire(record: LogRecord<Record>) {
     this.appenders.forEach((appender) => appender.append(record as Record))

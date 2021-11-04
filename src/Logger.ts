@@ -130,8 +130,8 @@ export class Logger {
   private createLevelEnabled(level: LevelKind) {
     return () => {
       const { rootThreshold } = this.manager
-
-      const categoryThresholds = [rootThreshold, this.overrideThreshold].filter(
+      
+      const categoryThresholds = [this.manager.determineThresholdOverride(this.category), rootThreshold, this.overrideThreshold].filter(
         isNumber
       )
 

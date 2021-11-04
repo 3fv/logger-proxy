@@ -49,7 +49,7 @@ export interface DebugAppenderConfig extends ConsoleAppenderConfig {
   timeOnly: boolean
   useConsole: boolean
   useStdout: boolean
-
+  categoryPrefix: string
 }
 
 /**
@@ -59,12 +59,12 @@ export type DebugAppenderOptions = Partial<DebugAppenderConfig>
 
 const debuggers = new Map<string, Debug.Debugger>()
 
-const debugAppPrefix = "app"
+//const debugAppPrefix = "app"
 
-function getDebug(cat: string) {
+function getDebug({categoryPrefix}: DebugAppenderConfig, cat: string) {
   let debug = debuggers.get(cat)
   if (!debug) {
-    debug = Debug([debugAppPrefix, cat].join(":"))
+    debug = Debug([categoryPrefix, cat].filter(negate(isEmpty)).join(":"))
     debuggers.set(cat, debug)
   }
 
@@ -192,6 +192,7 @@ const defaultConfig: DebugAppenderConfig = {
   timeOnly: true,
   useConsole: false,
   useStdout: true,
+  categoryPrefix: null,
   ...kDefaultConsoleAppenderConfig,
   formatter: debugFormatter
 }
@@ -219,7 +220,7 @@ export class DebugAppender<Record extends LogRecord>
     //   return
     // }
 
-    const debug = getDebug(category) as any
+    const debug = getDebug(this.config, category) as any
     let prevTime = debug.prevTime
     // Set `diff` timestamp
     const curr = Number(new Date())
