@@ -22,7 +22,8 @@ export const filenameCategoryInterpolator: CategoryInterpolator = (
   const rootIndex = Math.max(
     ...["src", "lib"].map((name) => allParts.indexOf(name))
   )
-  const parts = rootIndex === -1 ? [allParts.pop()] : allParts.slice(rootIndex + 1)
+  const parts =
+    rootIndex === -1 ? [allParts.pop()] : allParts.slice(rootIndex + 1)
   const category = asOption(parts.join(":"))
     .flatMap((cat) =>
       asOption(cat.lastIndexOf(".")).map((index) =>
@@ -130,10 +131,12 @@ export class Logger {
   private createLevelEnabled(level: LevelKind) {
     return () => {
       const { rootThreshold } = this.manager
-      
-      const categoryThresholds = [this.manager.determineThresholdOverride(this.category), rootThreshold, this.overrideThreshold].filter(
-        isNumber
-      )
+
+      const categoryThresholds = [
+        this.manager.determineThresholdOverride(this.category),
+        rootThreshold,
+        this.overrideThreshold
+      ].filter(isNumber)
 
       const categoryThreshold = Math.min(...categoryThresholds)
 
