@@ -5,18 +5,23 @@ import type { LogRecord } from "../LogRecord"
 import type { Appender } from "../Appender"
 import { asOption, Future } from "@3fv/prelude-ts"
 import { get } from "lodash/fp"
+import { padStart } from "lodash"
 import { Buffer } from "buffer"
 import { Deferred } from "@3fv/deferred"
 import Debug from "debug"
+import * as Bluebird from "bluebird"
 
 const FsAsync = Fs.promises
 
 const debug = Debug("3fv:logger:FileAppender")
-
+const osTempDir = process.env.TMP ?? process.env.TEMP ?? "/tmp"
+const tempDir = Fs.mkdtempSync(Path.join(osTempDir, "logger-proxy-example")) //
 const getDefaultConfig = (): FileAppenderConfig => ({
-  filename: Path.join(process.cwd(), "app.log"),
+  filename: Path.join(tempDir, "app.log"),
   prettyPrint: process.env.NODE_ENV !== "production",
   maxSize: -1,
+  maxFiles: 5,
+  enableRolling: false,
   sync: false
 })
 
@@ -26,8 +31,19 @@ function applyConfigDefaults(options: FileAppenderOptions): FileAppenderConfig {
 
 export interface FileAppenderConfig<Record extends LogRecord = any> {
   filename: string
-  prettyPrint: boolean
+
+  /**
+   * For rolling
+   */
+  maxFiles: number
+
+  /**
+   * For rolling
+   */
   maxSize: number
+
+  enableRolling: boolean
+  prettyPrint: boolean
   sync: boolean
 }
 
@@ -42,48 +58,45 @@ export class FileAppender<Record extends LogRecord>
 
   private readonly state: {
     filename: string
-    file: Fs.promises.FileHandle
+    file: number
     flushing: boolean
     queue: Array<Buffer>
     ready: boolean
     error?: Error
     currentSize: number
-    readyDeferred: Deferred<FileAppender<Record>>
+    archivedFilenames: string[]
   } = {
+    archivedFilenames: [],
     filename: undefined,
     file: undefined,
     ready: false,
     currentSize: 0,
     flushing: false,
-    queue: [],
-    readyDeferred: undefined
+    queue: []
+  }
+
+  get enableRolling() {
+    return this.config.enableRolling
   }
 
   isReady() {
     return this.state.ready
   }
 
-  whenReady() {
-    return this.setup()
-  }
-
   /**
    * Initialize and setup the appender
    *
-   * @returns {Promise<FileAppender<Record>>}
+   * @returns {FileAppender<Record>}
    */
-  async setup(): Promise<FileAppender<Record>> {
+  setup(): FileAppender<Record> {
     const { state } = this
-    if (!!state.readyDeferred) {
-      return state.readyDeferred.promise
+    if (!!state.ready) {
+      return this
     }
 
-    const deferred = (this.state.readyDeferred = new Deferred<
-      FileAppender<Record>
-    >())
     try {
       const { filename } = this
-      const file = await FsAsync.open(filename, "a")
+      const file = Fs.openSync(filename, "a")
 
       assign(state, {
         filename,
@@ -91,18 +104,73 @@ export class FileAppender<Record extends LogRecord>
         ready: true
       })
 
-      deferred.resolve(this)
-      return deferred.promise
+      return this
     } catch (err) {
-      deferred.reject(err)
       assign(state, {
         error: err,
         file: undefined,
-        ready: false,
-        readyDeferred: undefined
+        ready: false
       })
-      return deferred.promise
+      throw err
     }
+  }
+
+  /**
+   * Only exposed for the sake of tests & examples
+   * DO NOT USE
+   *
+   * This should all be async, but i was in a rush :(
+   *
+   * @returns
+   */
+  rollFile() {
+    const { state, config } = this
+    let { file, filename, archivedFilenames } = state
+    if (!this.isReady() || !file) {
+      debug(`Can not roll file before ready`)
+      return
+    }
+
+    if (!this.enableRolling) {
+      return
+    }
+
+    const fileCount = archivedFilenames.length + 1
+    if (config.maxFiles < 1 || fileCount < config.maxFiles) {
+      archivedFilenames.push(
+        filename + "." + padStart(fileCount.toString(10), 4, "0")
+      )
+    }
+    Fs.fdatasyncSync(file)
+    Fs.closeSync(file)
+    file = state.file = undefined
+    const filenames = [filename, ...archivedFilenames]
+
+    let dest: string = filenames.pop()
+    while (filenames.length) {
+      let src = filenames.pop()
+      if (!Fs.existsSync(src)) {
+        debug(`src does not exist, skipping ${src}`)
+      } else {
+        debug(`Moving src (${src}) to dest (${dest})`)
+        if (Fs.existsSync(dest)) {
+          Fs.unlinkSync(dest)
+        }
+        Fs.renameSync(src, dest)
+        // if (src === filename) {
+        //   Fs.copyFileSync(src, dest)
+        //   Fs.truncateSync(src, 0)
+        // } else {
+        //   Fs.renameSync(src, dest)
+        // }
+      }
+      dest = src
+    }
+
+    assign(state, {
+      currentSize: 0,
+      file: Fs.openSync(filename, "a")
+    })
   }
 
   /**
@@ -110,14 +178,10 @@ export class FileAppender<Record extends LogRecord>
    *
    * @returns {Promise<void>}
    */
-  close(): Promise<void> {
-    return asOption(this.state.file)
-      .map((file) => file.close())
-      .getOrCall(() => Promise.resolve())
-      .catch((err) => {
-        console.warn(`failed to cleanly close file`, err)
-        return Promise.resolve()
-      })
+  close() {
+    return this.flush().onComplete(() =>
+      asOption(this.state.file).map(Fs.closeSync)
+    ).toPromise()
   }
 
   get queue() {
@@ -140,10 +204,8 @@ export class FileAppender<Record extends LogRecord>
    * Appends the log queue records to the file
    */
   private flush() {
-    const {state} = this
-    Future.do(async () => {
-      await this.whenReady()
-      
+    const { state } = this
+    return Future.do(async () => {
       state.flushing = true
       try {
         const { file } = this
@@ -152,17 +214,20 @@ export class FileAppender<Record extends LogRecord>
         }
         while (this.queue.length) {
           const buf: Buffer = this.queue.shift()
-          await this.file.appendFile(buf, "utf-8")
-          state.currentSize += buf.byteLength
-          const {maxSize} = this.config
-          if (maxSize > 0 && state.currentSize >= maxSize) {
-            await this.file.truncate(0)
-            await this.file.appendFile("Truncated file at " + new Date().toISOString() + "\n")
-          }
 
+          await Bluebird.fromCallback((cb) =>
+            Fs.appendFile(file, buf, "utf-8", cb)
+          )
+
+          state.currentSize += buf.byteLength
         }
 
-        await this.file.datasync()
+        const { maxSize } = this.config
+        if (maxSize > 0 && state.currentSize >= maxSize) {
+          this.rollFile()
+        }
+
+        //await Bluebird.fromCallback((cb) => Fs.fdatasync(this.file, cb))
       } catch (err) {
         console.error(`Failed to append file ${this.filename}`, err)
       } finally {
@@ -212,15 +277,8 @@ export class FileAppender<Record extends LogRecord>
       filename: this.config.filename
     })
 
-    queueMicrotask(() => {
-      this.setup()
-        .then(({ state }) => {
-          debug(`File appender is ready, logging to ${state.filename}`)
-          return this
-        })
-        .catch((err) => {
-          console.error(`failed to setup file appender`, err)
-        })
-    })
+    this.setup()
+    debug(`File appender is ready, logging to ${this.state.filename}`)
+    //      return this
   }
 }

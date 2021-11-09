@@ -97,8 +97,8 @@ export class Logger {
    *
    * @param record
    */
-  log(record: LogRecord)
-  log(level: LevelKind, message: string, ...args: any[])
+  log(record: LogRecord):void
+  log(level: LevelKind, message: string, ...args: any[]):void
   log(levelOrRecord: LevelKind | LogRecord, ...args: any[]) {
     const record = toLogRecord(this, levelOrRecord, args)
     this.manager.fire(record)
@@ -132,8 +132,9 @@ export class Logger {
     return () => {
       const { rootThreshold } = this.manager
 
+      const globalOverrideThreshold = this.manager.determineThresholdOverride(this.category)
       const categoryThresholds = [
-        this.manager.determineThresholdOverride(this.category),
+        globalOverrideThreshold,
         rootThreshold,
         this.overrideThreshold
       ].filter(isNumber)
