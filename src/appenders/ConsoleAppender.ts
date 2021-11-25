@@ -81,7 +81,7 @@ export class ConsoleAppender<Record extends LogRecord>
     const { formatter = consoleFormatter } = this.config
     asOption(formatter(record)).map((result) => {
       const args = Array.isArray(result) ? result : [result]
-      this.write(level, args)
+      this.write(level, ...args)
     })
   }
 
@@ -94,7 +94,7 @@ export class ConsoleAppender<Record extends LogRecord>
   protected write(level: LevelKind, ...args: any[]) {
     asOption(console[level])
         .orElse(() => asOption(console.log))
-        .map((fn) => fn.apply(console, args))
+        .map((fn: Function) => fn.apply(console, args))
   }
 
   /**

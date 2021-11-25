@@ -8,7 +8,7 @@ import {
   kDefaultConsoleAppenderConfig
 } from "./ConsoleAppender"
 import type { Formatter } from "../Formatter"
-import { isEmpty, negate } from "lodash"
+import { flatten, isEmpty, negate } from "lodash"
 import type ChalkType from "chalk"
 import { asOption } from "@3fv/prelude-ts"
 import { assert, isFunction } from "@3fv/guard"
