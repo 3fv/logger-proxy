@@ -29,6 +29,12 @@ export class LoggerContext {
    */
   readonly exclusive: RegExp
   
+  /**
+   * Use a logger context within
+   *
+   * @param {() => Promise<T>} fn
+   * @returns {Promise<T>}
+   */
   async use<T = unknown>(fn: () => Promise<T>) {
     const contexts = currentContextStore()
     return contextStorage.run<Promise<T>,[]>([...contexts, this], fn)
