@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="TypeScript Source" pattern="file[typelogger]:src//*||file[typelogger]:typings//*" />
-</component>

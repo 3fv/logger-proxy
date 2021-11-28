@@ -2,7 +2,7 @@ import { isString } from "@3fv/guard"
 import { asOption } from "@3fv/prelude-ts"
 import { isEmpty, negate } from "lodash"
 import type { Appender } from "./Appender"
-import { ConsoleAppender } from "./appenders/ConsoleAppender"
+import { ConsoleAppender } from "./appenders"
 import { Level, LevelKind, LevelThresholds } from "./Level"
 import { Logger, LoggerOptions } from "./Logger"
 import type { LogRecord } from "./LogRecord"
@@ -96,8 +96,8 @@ export class LoggingManager<Record extends LogRecord = any> {
 
   /**
    * Check for any matching threshold overrides
-   * 
-   * @param category 
+   *
+   * @param category
    */
   determineThresholdOverride(category: string) {
     const override = this.thresholdOverrides.find(([match]) => isString(match) ? match === category : match.test(category))
