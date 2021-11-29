@@ -1,7 +1,8 @@
 import { AsyncLocalStorage } from "async_hooks"
 import { uniq } from "lodash"
 import type { LogContext } from "../../LogContext"
-import { LogContextProvider } from "../../LogContextProvider"
+import type { LogContextProvider } from "../../LogContextProvider"
+import { LogContextContainer } from "../../LogContextContainer"
 
 const contextStorage = new AsyncLocalStorage<Array<LogContext>>()
 
@@ -39,6 +40,6 @@ class NodeContextProvider implements LogContextProvider {
 
 const instance = new NodeContextProvider()
 
-LogContextProvider.set(instance)
+LogContextContainer.setProvider(instance)
 
 export {}
