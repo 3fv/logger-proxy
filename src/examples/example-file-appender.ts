@@ -13,19 +13,20 @@ async function run() {
     maxFiles: 4,
     maxSize: 20480
   })
-  manager.appenders = [fileAppender]
-
-  manager.setRootLevel("trace")
+  manager.setAppenders(fileAppender).setRootLevel("trace")
 
   const log = getLogger(__filename)
 
   for (const i of range(0, 50)) {
-    LevelNames.forEach((name) => log[name].call(log, `${i} example `, Faker.lorem.sentences(5)))
+    LevelNames.forEach((name) =>
+      log[name].call(log, `${i} example `, Faker.lorem.sentences(5))
+    )
     await Deferred.delay(500)
     // fileAppender.rollFile()
-    LevelNames.forEach((name) => log[name].call(log, `${i} example `, Faker.lorem.sentences(2)))
+    LevelNames.forEach((name) =>
+      log[name].call(log, `${i} example `, Faker.lorem.sentences(2))
+    )
     await Deferred.delay(500)
-    
   }
 
   await fileAppender.close()

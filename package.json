@@ -59,7 +59,7 @@
     "@types/shelljs": "^0.8.9",
     "cross-env": "^7.0.3",
     "faker": "^5.5.3",
-    "jest": "27.4.0",
+    "jest": "^27.4.0",
     "lodash": "^4.17.21",
     "prettier": "^2.4.1",
     "semver": "^7.3.5",

@@ -1,6 +1,6 @@
 import { isNumber, isString } from "@3fv/guard"
 import { asOption, Predicate } from "@3fv/prelude-ts"
-import { isEmpty, min, negate } from "lodash"
+import { flatten, isEmpty, min, negate } from "lodash"
 import type { Appender } from "./Appender"
 import { ConsoleAppender } from "./appenders"
 import { Level, LevelKind, LevelThresholds } from "./Level"
@@ -18,6 +18,10 @@ export interface LoggingManagerState<Record extends LogRecord> {
   appenders: Array<Appender<Record>>
   thresholdOverrides: Array<ThresholdOverride>
 }
+
+export type LoggingManagerOptions<Record extends LogRecord> = Partial<
+  LoggingManagerState<Record>
+>
 
 function parseThresholdOverridePatterns(
   value: string,
@@ -75,21 +79,54 @@ export class LoggingManager<Record extends LogRecord = any> {
     return this.state.thresholdOverrides
   }
 
+  // /**
+  //  * Set the handler explicitly
+  //  *
+  //  * @param newAppenders
+  //  */
+  // protected set appenders(newAppenders: Array<Appender<Record>>) {
+  //   this.setAppenders(newAppenders)
+  // }
+
   /**
-   * Set the handler explicitly
+   * Set global appenders
    *
-   * @param newAppenders
+   * @param {Array<Appender<Record>>} newAppenders
    */
-  set appenders(newAppenders: Array<Appender<Record>>) {
+  setAppenders(...newAppenders: Array<Appender<Record> | Appender<Record>[]>) {
     // WE MUTATE DO TO THE LIKELIHOOD OF SOMEONE HOLDING A REF TO THE ARRAY,
     // CONVERT TO OBSERVABLE AT SOME POINT
     const persistentAppenders = this.state.appenders
     persistentAppenders.length = 0
-    persistentAppenders.push(...asOption(newAppenders).getOrElse([]))
-  }
+    persistentAppenders.push(...flatten(newAppenders))
 
+    return this
+  }
+  
+  /**
+   * Add one or more appenders to existing appender set
+   *
+   * @param {Appender<Record> | Appender<Record>[]} newAppenders
+   * @returns {this<Record>}
+   */
+  addAppenders(...newAppenders: Array<Appender<Record> | Appender<Record>[]>) {
+    this.state.appenders.push(...flatten(newAppenders))
+    return this
+  }
+  
+  /**
+   * Clear threshold overrides
+   *
+   * @returns {this<Record>}
+   */
   clearThresholdOverrides() {
     this.state.thresholdOverrides.length = 0
+    return this
+  }
+
+  setThresholdOverrides(...overrides: Array<ThresholdOverride>) {
+    this.state.thresholdOverrides.length = 0
+    this.state.thresholdOverrides.push(...overrides)
     return this
   }
 
@@ -140,22 +177,44 @@ export class LoggingManager<Record extends LogRecord = any> {
 
     return override
   }
-
+  
+  /**
+   * Set the root logging level
+   *
+   * @param {LevelKind} newLevel
+   * @returns {this<Record>}
+   */
   setRootLevel(newLevel: LevelKind) {
     this.state.rootLevel = newLevel
+    return this
   }
-
+  
+  /**
+   * Fire a log event, eventually
+   * invert this by making `Logger` an
+   * `EventEmitter3` and having the `LoggingManager`
+   * subscribe to `record` event
+   *
+   * @param {LogRecord<Record>} record
+   * @internal
+   */
   fire(record: LogRecord<Record>) {
     const { category } = record,
       contexts = this.getApplicableCurrentContexts(category),
-      contextAppenders = contexts.flatMap(
-        get("appenders")
-      ),
+      contextAppenders = contexts.flatMap(get("appenders")),
       appenders = [...this.appenders, ...contextAppenders]
 
     appenders.forEach((appender) => appender.append(record as Record))
   }
-
+  
+  /**
+   * Get a logger from cache, if the category
+   * does not have an existing logger, then create one.
+   *
+   * @param {string} categoryOrFilename
+   * @param {Partial<LoggerOptions>} inOptions
+   * @returns {Logger}
+   */
   getLogger(
     categoryOrFilename: string,
     inOptions: Partial<LoggerOptions> = {}
@@ -172,14 +231,61 @@ export class LoggingManager<Record extends LogRecord = any> {
       })
   }
 
-  private constructor() {}
+  /**
+   * Configure the logging manager,
+   * this function is additive, so simply calling
+   * `configure` with a single option `rootLevel`,
+   * will not affect other options like `appenders`   *
+   *
+   * @param {LoggingManagerOptions<any>} options
+   * @returns {this<Record>}
+   */
+  configure(options: LoggingManagerOptions<any>) {
+    if (Level[options?.rootLevel]) {
+      this.setRootLevel(options.rootLevel)
+    }
 
+    if (options?.appenders) {
+      this.setAppenders(options.appenders)
+    }
+
+    if (options?.thresholdOverrides) {
+      this.addThresholdOverrides(...options.thresholdOverrides)
+    }
+
+    return this
+  }
+
+  private constructor() {
+    this.configure({})
+  }
+  
+  /**
+   * Singleton instance
+   *
+   * @type {LoggingManager}
+   * @private
+   */
   private static manager: LoggingManager
-
-  static get<Record extends LogRecord = any>(): LoggingManager<Record> {
+  
+  /**
+   * Get logging manager and optionally provided
+   * configuration options
+   *
+   * @param {LoggingManagerOptions<Record>} options
+   * @returns {LoggingManager<Record>}
+   */
+  static get<Record extends LogRecord = any>(
+    options: LoggingManagerOptions<Record> = null
+  ): LoggingManager<Record> {
     if (!this.manager) {
       this.manager = new LoggingManager<Record>()
     }
+
+    if (options) {
+      this.manager.configure(options)
+    }
+
     return this.manager
   }
 }
