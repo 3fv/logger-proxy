@@ -6,8 +6,8 @@
   "types": "index.d.ts",
   "scripts": {
     "init": "mkdir -p lib && cp package.json lib/",
-    "build": "tsc -b tsconfig.json ${TSC_OPTS}",
-    "build:watch": "cross-env TSC_OPTS=--watch yarn run build",
+    "build": "tsc -b tsconfig.json",
+    "build:watch": "tsc -b tsconfig.json --watch",
     "test": "jest",
     "test:watch": "jest --watch",
     "clean": "./scripts/clean.sh",
@@ -15,7 +15,7 @@
     "release": "yarn build  && yarn version --patch --non-interactive"
   },
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "repository": {
     "type": "git",
