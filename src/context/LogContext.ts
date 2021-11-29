@@ -1,12 +1,14 @@
 import { Appender } from "../Appender"
 import { Level } from "../Level"
-import { AsyncLocalStorage } from 'async_hooks';
+import { LogContextProvider } from "./LogContextProvider"
+import { LogContextContainer } from "./LogContextContainer"
 
-const contextStorage = new AsyncLocalStorage<Array<LoggerContext>>()
 
-export const currentContextStore = () => contextStorage.getStore()
 
-export class LoggerContext {
+
+
+
+export class LogContext {
   /**
    * Threshold override level
    *
@@ -35,10 +37,8 @@ export class LoggerContext {
    * @param {() => Promise<T>} fn
    * @returns {Promise<T>}
    */
-  async use<T = unknown>(fn: () => Promise<T>) {
-    const contexts = currentContextStore()
-    return contextStorage.run<Promise<T>,[]>([...contexts, this], fn)
-    
+  use<T = unknown>(fn: () => Promise<T>) {
+    return LogContextContainer.runInContext(this, fn)
   }
   
   /**
@@ -53,6 +53,8 @@ export class LoggerContext {
   ) {
     Object.assign(this, {
       exclusive: false,
+      thresholdLevel: null,
+      pattern: null,
       ...options
     })
   }
@@ -62,11 +64,11 @@ export class LoggerContext {
    *
    * @param {Appender[]} appenders
    * @param {LoggerContextOptions} options
-   * @returns {LoggerContext}
+   * @returns {LogContext}
    */
   static with(appenders: Appender[], options: LoggerContextOptions = {}) {
-    return new LoggerContext(appenders, options)
+    return new LogContext(appenders, options)
   }
 }
 
-export type LoggerContextOptions = Partial<Pick<LoggerContext, "pattern" | "exclusive">>
+export type LoggerContextOptions = Partial<Pick<LogContext, "pattern" | "exclusive">>

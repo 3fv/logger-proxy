@@ -1,11 +1,13 @@
-import { isString } from "@3fv/guard"
-import { asOption } from "@3fv/prelude-ts"
-import { isEmpty, negate } from "lodash"
+import { isNumber, isString } from "@3fv/guard"
+import { asOption, Predicate } from "@3fv/prelude-ts"
+import { isEmpty, min, negate } from "lodash"
 import type { Appender } from "./Appender"
 import { ConsoleAppender } from "./appenders"
 import { Level, LevelKind, LevelThresholds } from "./Level"
 import { Logger, LoggerOptions } from "./Logger"
 import type { LogRecord } from "./LogRecord"
+import { LogContextContainer } from "./context/index"
+import { flow, get, nth } from "lodash/fp"
 
 export type CategoryMatch = RegExp | string
 
@@ -17,8 +19,13 @@ export interface LoggingManagerState<Record extends LogRecord> {
   thresholdOverrides: Array<ThresholdOverride>
 }
 
-function parseThresholdOverridePatterns(value: string, level: LevelKind = "debug"):ThresholdOverride[] {
-  return value.split(",").map(s => [new RegExp(s), level] as ThresholdOverride)
+function parseThresholdOverridePatterns(
+  value: string,
+  level: LevelKind = "debug"
+): ThresholdOverride[] {
+  return value
+    .split(",")
+    .map((s) => [new RegExp(s), level] as ThresholdOverride)
 }
 
 export const kEnvThresholdOverrides = asOption(process.env.DEBUG_PATTERNS)
@@ -30,7 +37,6 @@ export const kEnvThresholdOverrides = asOption(process.env.DEBUG_PATTERNS)
  * Logging manager
  */
 export class LoggingManager<Record extends LogRecord = any> {
-  
   readonly loggers = new Map<string, Logger>()
 
   readonly state: LoggingManagerState<Record> = {
@@ -38,8 +44,6 @@ export class LoggingManager<Record extends LogRecord = any> {
     rootLevel: Level.info,
     thresholdOverrides: kEnvThresholdOverrides
   }
-
-  
 
   get rootLevel() {
     return this.state.rootLevel
@@ -78,7 +82,7 @@ export class LoggingManager<Record extends LogRecord = any> {
    */
   set appenders(newAppenders: Array<Appender<Record>>) {
     // WE MUTATE DO TO THE LIKELIHOOD OF SOMEONE HOLDING A REF TO THE ARRAY,
-    // CONVERT TO OBSERVABLE AT SOMEPOINT
+    // CONVERT TO OBSERVABLE AT SOME POINT
     const persistentAppenders = this.state.appenders
     persistentAppenders.length = 0
     persistentAppenders.push(...asOption(newAppenders).getOrElse([]))
@@ -95,30 +99,60 @@ export class LoggingManager<Record extends LogRecord = any> {
   }
 
   /**
+   * Get applicable current contexts
+   *
+   * @param {string} category
+   * @returns {LogContext[]}
+   */
+  getApplicableCurrentContexts(category: string) {
+    return LogContextContainer.currentContext().filter(
+      ({ pattern }) => !pattern || pattern.test(category)
+    )
+  }
+
+  /**
    * Check for any matching threshold overrides
    *
    * @param category
    */
-  determineThresholdOverride(category: string) {
-    const override = this.thresholdOverrides.find(([match]) => isString(match) ? match === category : match.test(category))
-    if (!override) {
-      return null
-    } else {
-      const [,level] = override
-      return LevelThresholds[level]
-    }
-    
+  determineThresholdOverride(category: string): number {
+    const contexts = this.getApplicableCurrentContexts(category),
+      // FIND CONFIGURED OVERRIDE LEVEL
+      overrideThreshold = asOption(
+        this.thresholdOverrides.find(([match]) =>
+          isString(match) ? match === category : match.test(category)
+        )
+      )
+        .map(nth(1))
+        .map((level) => LevelThresholds[level as Level])
+        .getOrNull(),
+      // FIND `LogContext` OVERRIDE LEVEL
+      contextThresholds = contexts
+        .filter(flow(get("thresholdLevel"), isString))
+        .map(({ thresholdLevel }) => LevelThresholds[thresholdLevel]),
+      // IF ANY OVERRIDES, GET THE MOST VERBOSE LEVEL
+      override = asOption(
+        [...contextThresholds, overrideThreshold].filter(isNumber)
+      )
+        .filter(negate(isEmpty))
+        .map(min)
+        .getOrNull()
+
+    return override
   }
-  
+
   setRootLevel(newLevel: LevelKind) {
     this.state.rootLevel = newLevel
   }
 
-  
-  
-
   fire(record: LogRecord<Record>) {
-    this.appenders.forEach((appender) => appender.append(record as Record))
+    const { category } = record,
+      contextAppenders = this.getApplicableCurrentContexts(category).flatMap(
+        get("appenders")
+      ),
+      appenders = [...this.appenders, ...contextAppenders]
+
+    appenders.forEach((appender) => appender.append(record as Record))
   }
 
   getLogger(
@@ -137,9 +171,7 @@ export class LoggingManager<Record extends LogRecord = any> {
       })
   }
 
-  private constructor() {
-
-  }
+  private constructor() {}
 
   private static manager: LoggingManager
 
