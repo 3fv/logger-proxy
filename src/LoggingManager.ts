@@ -147,7 +147,8 @@ export class LoggingManager<Record extends LogRecord = any> {
 
   fire(record: LogRecord<Record>) {
     const { category } = record,
-      contextAppenders = this.getApplicableCurrentContexts(category).flatMap(
+      contexts = this.getApplicableCurrentContexts(category),
+      contextAppenders = contexts.flatMap(
         get("appenders")
       ),
       appenders = [...this.appenders, ...contextAppenders]

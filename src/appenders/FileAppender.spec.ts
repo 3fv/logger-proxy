@@ -15,9 +15,10 @@ const debug = Debug("3fv:logger:FileAppender")
 const logMatch = /app\.log/
 const countLogFiles = (dir: string, match: RegExp = /.*/) => Sh.ls(dir).filter(name => match.test(name)).length
 const osTempDir = process.env.TMP ?? process.env.TEMP ?? "/tmp"
+
 describe("FileAppender", () => {
   jest.setTimeout(10000)
-
+  
   it("rolls", async () => {
     const tempDir = Fs.mkdtempSync(Path.join(osTempDir,"jest-logger-proxy")) //
     Sh.mkdir("-p", tempDir)

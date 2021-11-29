@@ -22,7 +22,7 @@ export namespace LogContextContainer  {
   
   export function runInContext<T = unknown>(context: LogContext, fn: () => Promise<T>): Promise<T> {
     const provider = getProvider()
-    return provider.runInContext(this,fn)
+    return provider.runInContext(context,fn)
   }
   
 }
