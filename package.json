@@ -40,7 +40,7 @@
   "homepage": "https://github.com/3fv/logger-proxy#readme",
   "dependencies": {
     "@3fv/deferred": "^1.2.4",
-    "@3fv/guard": "^1.4.26",
+    "@3fv/guard": "1.4.31",
     "@3fv/prelude-ts": "^0.8.23",
     "bluebird": "^3.7.2",
     "chalk": "^4.1.2",

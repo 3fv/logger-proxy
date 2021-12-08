@@ -7,7 +7,14 @@
   resolved "https://npm.pkg.github.com/download/@3fv/deferred/1.2.6/0742ab023e9a52efdd640d45383aaa9a1b8aa62d4563ed7e50a6d2ba8c41c1d7#7d5fe143b835e7a545f80f559f1626d83124a0ad"
   integrity sha512-pdRH9Gz9fxMfha9RiH0R74zfdq7LZB9SYDVwcFaDH1Dnj+Da8IFOz4tujb0hM5Ti95Rd//b5i2LUlTZTLRGRug==
 
-"@3fv/guard@^1.4.26", "@3fv/guard@^1.4.30":
+"@3fv/guard@1.4.31":
+  version "1.4.31"
+  resolved "https://npm.pkg.github.com/download/@3fv/guard/1.4.31/dba1ede31e440ccf8ed932df4be8794c7b94c2463f5d2ee34319601fa0fb5612#5f03a53941ee81692deeae94566d56f770804a8f"
+  integrity sha512-H+VdoUPyNE1+GJZWkxamNRzJ5gU+isp0zZUTedHh+Qlq2hDtkTPJo0uZm5DDWVd2gaR4GNBqc2RbIs3fUCyOfQ==
+  dependencies:
+    lodash "^4.17.15"
+
+"@3fv/guard@^1.4.30":
   version "1.4.30"
   resolved "https://npm.pkg.github.com/download/@3fv/guard/1.4.30/4f805f6a243dc23e1bd32b272a4855b2f2906d5bd985276ba74f5a7fe41dc31e#2a456623296ca3d7070113f12b28e0db1ebad5b2"
   integrity sha512-LCNArBhRIZQgmQf4S9GFAdmOAyeaXeRx5ZEYdyQqEfJ/68+6gNMQP1fsRuyvH0bR3UcfQW15sMU8QP2v2W7eeQ==
