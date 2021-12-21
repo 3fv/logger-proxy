@@ -154,7 +154,8 @@ export class LoggingManager<Record extends LogRecord = any> {
    */
   determineThresholdOverride(category: string): number {
     const contexts = this.getApplicableCurrentContexts(category),
-      // FIND CONFIGURED OVERRIDE LEVEL
+      
+    // FIND CONFIGURED OVERRIDE LEVEL
       overrideThreshold = asOption(
         this.thresholdOverrides.find(([match]) =>
           isString(match) ? match === category : match.test(category)
