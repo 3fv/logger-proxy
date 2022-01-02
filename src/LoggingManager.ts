@@ -32,7 +32,7 @@ function parseThresholdOverridePatterns(
     .map((s) => [new RegExp(s), level] as ThresholdOverride)
 }
 
-export const kEnvThresholdOverrides = asOption(process.env.DEBUG_PATTERNS)
+export const kEnvThresholdOverrides = asOption(typeof process !== "undefined" && process.env.DEBUG_PATTERNS)
   .filter(negate(isEmpty))
   .map(parseThresholdOverridePatterns)
   .getOrElse([])
@@ -154,7 +154,8 @@ export class LoggingManager<Record extends LogRecord = any> {
    */
   determineThresholdOverride(category: string): number {
     const contexts = this.getApplicableCurrentContexts(category),
-      // FIND CONFIGURED OVERRIDE LEVEL
+      
+    // FIND CONFIGURED OVERRIDE LEVEL
       overrideThreshold = asOption(
         this.thresholdOverrides.find(([match]) =>
           isString(match) ? match === category : match.test(category)
