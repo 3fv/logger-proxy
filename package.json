@@ -5,9 +5,9 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "init": "mkdir -p lib && cp package.json lib/",
-    "build": "tsc -b tsconfig.json",
-    "build:watch": "tsc -b tsconfig.json --watch",
+    "init": "mkdir -p lib && cat package.json | jq 'del(.scripts)' > lib/package.json",
+    "build": "yarn run init && tsc -b tsconfig.json",
+    "build:watch": "yarn run build && cd lib && yarn unlink;yarn link && cd .. && yarn run build --watch",
     "test": "jest",
     "test:watch": "jest --watch",
     "clean": "./scripts/clean.sh",
@@ -40,7 +40,7 @@
   "homepage": "https://github.com/3fv/logger-proxy#readme",
   "dependencies": {
     "@3fv/deferred": "^1.2.4",
-    "@3fv/guard": "1.4.31",
+    "@3fv/guard": "^1",
     "@3fv/prelude-ts": "^0.8.23",
     "bluebird": "^3.7.2",
     "chalk": "^4.1.2",
