@@ -1,12 +1,12 @@
-import { isNumber, isString } from "@3fv/guard"
-import { asOption, Predicate } from "@3fv/prelude-ts"
+import { isNumber, isObject, isString } from "@3fv/guard"
+import { asOption, Option } from "@3fv/prelude-ts"
 import { flatten, isEmpty, min, negate } from "lodash"
 import type { Appender } from "./Appender"
 import { ConsoleAppender } from "./appenders"
 import { Level, LevelKind, LevelThresholds } from "./Level"
 import { Logger, LoggerOptions } from "./Logger"
 import type { LogRecord } from "./LogRecord"
-import { LogContextContainer } from "./context/index"
+import { LogContextContainer } from "./context"
 import { flow, get, nth } from "lodash/fp"
 
 export type CategoryMatch = RegExp | string
@@ -41,9 +41,9 @@ export const kEnvThresholdOverrides = asOption(typeof process !== "undefined" &&
  * Logging manager
  */
 export class LoggingManager<Record extends LogRecord = any> {
-  readonly loggers = new Map<string, Logger>()
+  private readonly loggers = new Map<string, Logger>()
 
-  readonly state: LoggingManagerState<Record> = {
+  private readonly state: LoggingManagerState<Record> = {
     appenders: [],
     rootLevel: Level.info,
     thresholdOverrides: kEnvThresholdOverrides
@@ -74,20 +74,23 @@ export class LoggingManager<Record extends LogRecord = any> {
         return this.state.appenders
       })
   }
-
+  
+  /**
+   * Global threshold overrides
+   */
   get thresholdOverrides() {
     return this.state.thresholdOverrides
   }
-
-  // /**
-  //  * Set the handler explicitly
-  //  *
-  //  * @param newAppenders
-  //  */
-  // protected set appenders(newAppenders: Array<Appender<Record>>) {
-  //   this.setAppenders(newAppenders)
-  // }
-
+  
+  /**
+   * Update the overrides
+   *
+   * @param newOverrides
+   */
+  set thresholdOverrides(newOverrides:ThresholdOverride[]) {
+    this.state.thresholdOverrides = newOverrides
+  }
+  
   /**
    * Set global appenders
    *
@@ -293,4 +296,11 @@ export class LoggingManager<Record extends LogRecord = any> {
 
 export function getLoggingManager(): LoggingManager {
   return LoggingManager.get()
+}
+
+if (Option.try(() => process.env.NODE_ENV === "development").getOrElse(false)) {
+  [typeof window !== "undefined" && window, typeof global !== "undefined" && global].filter(isObject)
+    .map(target => Object.assign(target, {
+      loggingManager: getLoggingManager()
+    }))
 }
