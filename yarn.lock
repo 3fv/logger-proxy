@@ -7,10 +7,10 @@
   resolved "https://npm.pkg.github.com/download/@3fv/deferred/1.2.6/0742ab023e9a52efdd640d45383aaa9a1b8aa62d4563ed7e50a6d2ba8c41c1d7#7d5fe143b835e7a545f80f559f1626d83124a0ad"
   integrity sha512-pdRH9Gz9fxMfha9RiH0R74zfdq7LZB9SYDVwcFaDH1Dnj+Da8IFOz4tujb0hM5Ti95Rd//b5i2LUlTZTLRGRug==
 
-"@3fv/guard@1.4.31":
-  version "1.4.31"
-  resolved "https://npm.pkg.github.com/download/@3fv/guard/1.4.31/dba1ede31e440ccf8ed932df4be8794c7b94c2463f5d2ee34319601fa0fb5612#5f03a53941ee81692deeae94566d56f770804a8f"
-  integrity sha512-H+VdoUPyNE1+GJZWkxamNRzJ5gU+isp0zZUTedHh+Qlq2hDtkTPJo0uZm5DDWVd2gaR4GNBqc2RbIs3fUCyOfQ==
+"@3fv/guard@^1":
+  version "1.4.35"
+  resolved "https://registry.yarnpkg.com/@3fv/guard/-/guard-1.4.35.tgz#bc7dda8b8ff75e70e1f8e8da250b306a2369d74a"
+  integrity sha512-tDo1aKawqW1sT6fyMp4+m7cTYtISZ4r2YOz4Az2/F/EteSZvhB6vUCsEF8feM+NTpAPF4nrsCmlQrrAmKfkiPw==
   dependencies:
     lodash "^4.17.15"
 
@@ -1952,11 +1952,9 @@ jsesc@^2.5.1:
   integrity sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==
 
 json5@2.x, json5@^2.1.2:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.0.tgz#2dfefe720c6ba525d9ebd909950f0515316c89a3"
-  integrity sha512-f+8cldu7X/y7RAJurMEJmdoKXGB/X550w2Nr3tTbezL6RwEE/iMcm+tZnXeoZtKuOq6ft8+CqzEkrIgx1fPoQA==
-  dependencies:
-    minimist "^1.2.5"
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.3.tgz#78cd6f1a19bdc12b73db5ad0c61efd66c1e29283"
+  integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
 
 kleur@^3.0.3:
   version "3.0.3"
@@ -2060,11 +2058,6 @@ minimatch@^3.0.4:
   integrity sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==
   dependencies:
     brace-expansion "^1.1.7"
-
-minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
 
 ms@2.1.2:
   version "2.1.2"
