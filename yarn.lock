@@ -7,10 +7,10 @@
   resolved "https://npm.pkg.github.com/download/@3fv/deferred/1.2.6/0742ab023e9a52efdd640d45383aaa9a1b8aa62d4563ed7e50a6d2ba8c41c1d7#7d5fe143b835e7a545f80f559f1626d83124a0ad"
   integrity sha512-pdRH9Gz9fxMfha9RiH0R74zfdq7LZB9SYDVwcFaDH1Dnj+Da8IFOz4tujb0hM5Ti95Rd//b5i2LUlTZTLRGRug==
 
-"@3fv/guard@1.4.31":
-  version "1.4.31"
-  resolved "https://npm.pkg.github.com/download/@3fv/guard/1.4.31/dba1ede31e440ccf8ed932df4be8794c7b94c2463f5d2ee34319601fa0fb5612#5f03a53941ee81692deeae94566d56f770804a8f"
-  integrity sha512-H+VdoUPyNE1+GJZWkxamNRzJ5gU+isp0zZUTedHh+Qlq2hDtkTPJo0uZm5DDWVd2gaR4GNBqc2RbIs3fUCyOfQ==
+"@3fv/guard@^1":
+  version "1.4.35"
+  resolved "https://registry.yarnpkg.com/@3fv/guard/-/guard-1.4.35.tgz#bc7dda8b8ff75e70e1f8e8da250b306a2369d74a"
+  integrity sha512-tDo1aKawqW1sT6fyMp4+m7cTYtISZ4r2YOz4Az2/F/EteSZvhB6vUCsEF8feM+NTpAPF4nrsCmlQrrAmKfkiPw==
   dependencies:
     lodash "^4.17.15"
 
@@ -2062,9 +2062,9 @@ minimatch@^3.0.4:
     brace-expansion "^1.1.7"
 
 minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
+  integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
 
 ms@2.1.2:
   version "2.1.2"
