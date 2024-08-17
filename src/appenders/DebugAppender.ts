@@ -9,11 +9,11 @@ import {
 } from "./ConsoleAppender"
 import type { Formatter } from "../Formatter"
 import { flatten, isEmpty, negate } from "lodash"
-import type ChalkType from "chalk"
+// import type ChalkType from "chalk"
 import { asOption } from "@3fv/prelude-ts"
 import { assert, isFunction } from "@3fv/guard"
 
-let chalk: ChalkType.Chalk = null
+let chalk: any = null
 if (
   typeof process !== "undefined" &&
   (process as any).type !== "renderer" &&
@@ -24,7 +24,7 @@ if (
 
 const useColors = !!chalk
 
-const makeColorFn = (fn: (chalk: ChalkType.Chalk, s: string) => string) => {
+const makeColorFn = (fn: (chalk: any, s: string) => string) => {
   if (!useColors) {
     return (s: string) => s
   }

@@ -9,7 +9,7 @@ import { padStart } from "lodash"
 import { Buffer } from "buffer"
 import { Deferred } from "@3fv/deferred"
 import Debug from "debug"
-import * as Bluebird from "bluebird"
+import Bluebird from "bluebird"
 
 const FsAsync = Fs.promises
 

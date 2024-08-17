@@ -1,5 +1,5 @@
 import { Deferred } from "@3fv/deferred"
-import * as Faker from "faker"
+// import * as Faker from "faker"
 import { range } from "lodash"
 import { FileAppender } from "../appenders/FileAppender"
 import { getLogger } from "../getLogger"
@@ -16,18 +16,18 @@ async function run() {
   manager.setAppenders(fileAppender).setRootLevel("trace")
 
   const log = getLogger(__filename)
-
-  for (const i of range(0, 50)) {
-    LevelNames.forEach((name) =>
-      log[name].call(log, `${i} example `, Faker.lorem.sentences(5))
-    )
-    await Deferred.delay(500)
-    // fileAppender.rollFile()
-    LevelNames.forEach((name) =>
-      log[name].call(log, `${i} example `, Faker.lorem.sentences(2))
-    )
-    await Deferred.delay(500)
-  }
+  //
+  // for (const i of range(0, 50)) {
+  //   LevelNames.forEach((name) =>
+  //     log[name].call(log, `${i} example `, Faker.lorem.sentences(5))
+  //   )
+  //   await Deferred.delay(500)
+  //   // fileAppender.rollFile()
+  //   LevelNames.forEach((name) =>
+  //     log[name].call(log, `${i} example `, Faker.lorem.sentences(2))
+  //   )
+  //   await Deferred.delay(500)
+  // }
 
   await fileAppender.close()
 }

@@ -1,29 +1,16 @@
 {
-  "compilerOptions": {
-    "target": "ES5",
-    "lib": [
-      "dom",
-      "esnext"
-    ],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "declaration": true,
-    "emitDecoratorMetadata": true,
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
-    "experimentalDecorators": true,
-    "preserveConstEnums": true,
-    "allowSyntheticDefaultImports": true,
-    "outDir": "./lib",
-    "baseUrl": "./",
-    "inlineSourceMap": true
-  },
-  "compileOnSave": true,
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "lib",
-    "node_modules"
-  ]
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"composite": true,
+		"baseUrl": "./"
+	},
+	"references": [
+		{ "path": "./tsconfig.mjs.json"},
+		{ "path": "./tsconfig.cjs.json"}
+	],
+	"files": [],
+	"include": [],
+	"exclude": [
+		"**/*.*"
+	]
 }
