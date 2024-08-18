@@ -15,8 +15,8 @@
     "build": "node ./scripts/build.mjs",
     "build:link": "yarn run build && yarn unlink;yarn link",
     "build:watch": "run-s build:link && yarn run build --watch",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "yarn run build && jest",
+    "test:watch": "yarn run build && jest --watch",
     "test:dev": "run-s build && run-p test:watch build:watch",
     "preversion": "yarn build && yarn test",
     "clean": "./scripts/clean.sh",
@@ -58,6 +58,7 @@
   },
   "optionalDependencies": {},
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@types/bluebird": "^3.5.42",
     "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.12",

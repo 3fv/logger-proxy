@@ -35,7 +35,7 @@ describe("Logger", () => {
   test("category is parsed", () => {
     const log = getLogger(__filename)
 
-    expect(log.category).toBe("__tests__:Logger.spec")
+    expect(log.category).toBe("cjs:Logger.spec")
   })
 
   test("console is default", () => {

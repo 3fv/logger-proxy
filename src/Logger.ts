@@ -18,7 +18,7 @@ export type CategoryInterpolator = (
 export const filenameCategoryInterpolator: CategoryInterpolator = (
   filename: string
 ) => {
-  const allParts = filename.split("/")
+  const allParts = filename.replaceAll("\\","/").split("/")
   const rootIndex = Math.max(
     ...["src", "lib"].map((name) => allParts.indexOf(name))
   )

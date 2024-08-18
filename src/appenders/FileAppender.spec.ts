@@ -9,7 +9,7 @@ import { Deferred } from "@3fv/deferred"
 import * as Sh from "shelljs"
 import * as Path from "path"
 import * as Fs from "fs"
-// import * as Faker from "faker"
+import {faker as Faker} from "@faker-js/faker"
 
 const debug = Debug("3fv:logger:FileAppender")
 const logMatch = /app\.log/
@@ -23,7 +23,7 @@ describe("FileAppender", () => {
   it("rolls", async () => {
     const tempDir = Fs.mkdtempSync(Path.join(osTempDir, "jest-logger-proxy")) //
     Sh.mkdir("-p", tempDir)
-
+    Sh.rm("-Rf", `${tempDir}/*`)
     const filename = Path.join(tempDir, "app.log")
 
     if (countLogFiles(tempDir, logMatch)) {
@@ -46,19 +46,19 @@ describe("FileAppender", () => {
 
     const log = getLogger(__filename)
     //
-    // for (const i of range(0, 5)) {
-    //   LevelNames.forEach((name) =>
-    //     log[name].call(log, `${i} example `, Faker.lorem.sentences(5))
-    //   )
-    //   await Deferred.delay(500)
-    //
-    //   LevelNames.forEach((name) =>
-    //     log[name].call(log, `${i} example `, Faker.lorem.sentences(2))
-    //   )
-    //   await Deferred.delay(500)
-    //
-    //   // fileAppender.rollFile()
-    // }
+    for (const i of range(0, 5)) {
+      LevelNames.forEach((name) =>
+        log[name].call(log, `${i} example `, Faker.lorem.sentences(5))
+      )
+      await Deferred.delay(500)
+    
+      LevelNames.forEach((name) =>
+        log[name].call(log, `${i} example `, Faker.lorem.sentences(2))
+      )
+      await Deferred.delay(500)
+    
+      // fileAppender.rollFile()
+    }
 
     await fileAppender.close()
 
