@@ -1,6 +1,6 @@
-import { getLogger } from "../getLogger"
-import { LevelNames } from "../Level"
-import { getLoggingManager } from "../LoggingManager"
+import { getLogger } from "../getLogger.js"
+import { LevelNames } from "../Level.js"
+import { getLoggingManager } from "../LoggingManager.js"
 
 
 getLoggingManager().configure({

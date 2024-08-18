@@ -1,7 +1,7 @@
-import { Appender } from "../Appender"
-import { Level } from "../Level"
-import { LogContextProvider } from "./LogContextProvider"
-import { LogContextContainer } from "./LogContextContainer"
+import { Appender } from "../Appender.js"
+import { Level } from "../Level.js"
+import { LogContextProvider } from "./LogContextProvider.js"
+import { LogContextContainer } from "./LogContextContainer.js"
 
 
 

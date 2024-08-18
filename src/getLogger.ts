@@ -1,5 +1,5 @@
 import type { Logger, LoggerOptions } from "./Logger"
-import { getLoggingManager } from "./LoggingManager"
+import { getLoggingManager } from "./LoggingManager.js"
 
 export function getLogger(
   category: string,

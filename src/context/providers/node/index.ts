@@ -1,3 +1,3 @@
-import "./NodeContextProvider"
+import "./NodeContextProvider.js"
 
 export {}

@@ -1,10 +1,10 @@
 import { assert, isDefined, isNumber } from "@3fv/guard"
 import { asOption } from "@3fv/prelude-ts"
 import { pick } from "lodash"
-import { LevelKind, LevelThresholds } from "./Level"
+import { LevelKind, LevelThresholds } from "./Level.js"
 import type { LoggingManager } from "./LoggingManager"
 import type { LogRecord } from "./LogRecord"
-import { isLogLevelKind, isString } from "./util"
+import { isLogLevelKind, isString } from "./util.js"
 
 export interface LoggerOptions {
   categoryInterpolator: CategoryInterpolator

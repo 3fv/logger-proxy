@@ -6,30 +6,29 @@ import {
   ConsoleAppenderConfig,
   ConsoleAppender,
   kDefaultConsoleAppenderConfig
-} from "./ConsoleAppender"
+} from "./ConsoleAppender.js"
 import type { Formatter } from "../Formatter"
 import { flatten, isEmpty, negate } from "lodash"
-// import type ChalkType from "chalk"
-import { asOption } from "@3fv/prelude-ts"
-import { assert, isFunction } from "@3fv/guard"
 
-let chalk: any = null
-if (
-  typeof process !== "undefined" &&
-  (process as any).type !== "renderer" &&
-  (process as any).browser !== true
-) {
-  chalk = require("chalk")
-}
 
-const useColors = !!chalk
+// let chalk: any = null
+// if (
+//   typeof process !== "undefined" &&
+//   (process as any).type !== "renderer" &&
+//   (process as any).browser !== true
+// ) {
+//   chalk = require("chalk")
+// }
+
+const useColors = false//!!chalk
 
 const makeColorFn = (fn: (chalk: any, s: string) => string) => {
-  if (!useColors) {
-    return (s: string) => s
-  }
-
-  return (s: string) => fn(chalk, s)
+  // if (!useColors) {
+  //   return (s: string) => s
+  // }
+  //
+  // return (s: string) => fn(chalk, s)
+  return (s: string) => s
 }
 
 const colorFns: Record<LevelKind, (s: string) => string> = {

@@ -1,10 +1,10 @@
 import { Deferred } from "@3fv/deferred"
 // import * as Faker from "faker"
 import { range } from "lodash"
-import { FileAppender } from "../appenders/FileAppender"
-import { getLogger } from "../getLogger"
-import { LevelNames } from "../Level"
-import { getLoggingManager } from "../LoggingManager"
+import { FileAppender } from "../appenders/FileAppender.js"
+import { getLogger } from "../getLogger.js"
+import { LevelNames } from "../Level.js"
+import { getLoggingManager } from "../LoggingManager.js"
 
 async function run() {
   const manager = getLoggingManager()

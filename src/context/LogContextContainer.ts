@@ -1,5 +1,5 @@
-import { LogContext } from "./LogContext"
-import { DefaultLogContextProvider, LogContextProvider } from "./LogContextProvider"
+import { LogContext } from "./LogContext.js"
+import { DefaultLogContextProvider, LogContextProvider } from "./LogContextProvider.js"
 
 const state = {
   provider: DefaultLogContextProvider as LogContextProvider
