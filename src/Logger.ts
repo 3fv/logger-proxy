@@ -1,4 +1,4 @@
-import { assert, isDefined, isNumber } from "@3fv/guard"
+import { assert, isDefined, isFunction, isNumber } from "@3fv/guard"
 import { asOption } from "@3fv/prelude-ts"
 import { pick } from "lodash"
 import { LevelKind, LevelThresholds } from "./Level.js"
@@ -112,7 +112,7 @@ export class Logger {
    * @returns {(message: string, ...args: any[]) => void}
    * @private
    */
-  private createLevelLogger(level: LevelKind) {
+  private createLevelLogger(level: LevelKind): (message: string, ...args: any[]) => void {
     const isEnabled = this.createLevelEnabled(level)
     return (message: string, ...args: any[]) => {
       if (isEnabled()) {
@@ -128,7 +128,7 @@ export class Logger {
    * @returns {() => boolean}
    * @private
    */
-  private createLevelEnabled(level: LevelKind) {
+  private createLevelEnabled(level: LevelKind): () => boolean {
     return () => {
       const { rootThreshold } = this.manager
 
@@ -160,7 +160,30 @@ export class Logger {
   readonly isWarnEnabled = this.createLevelEnabled("warn")
   readonly isErrorEnabled = this.createLevelEnabled("error")
   readonly isFatalEnabled = this.createLevelEnabled("fatal")
-
+  
+  assert(test: boolean | (() => boolean), message: string, ...args: any[]) {
+    const isTruthy = isFunction(test) ? test() : test
+    if (isTruthy) {
+      return
+    }
+    
+    this.error(message, ...args)
+}
+  
+  assertFatal(test: boolean | (() => boolean), message: string, exitCode: number = 1) {
+    const isTruthy = isFunction(test) ? test() : test
+    if (isTruthy) {
+      return
+    }
+    
+    this.fatal("FATAL ASSERTION: ", message)
+    if (typeof process !== "undefined") {
+      process.exit(exitCode)
+    } else {
+      console.error("FATAL ASSERTION: `process` is not defined, probably in a web browser")
+    }
+  }
+  
   constructor(
     readonly manager: LoggingManager,
     readonly category: string,

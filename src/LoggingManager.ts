@@ -6,7 +6,7 @@ import { ConsoleAppender } from "./appenders/ConsoleAppender.js"
 import { Level, LevelKind, LevelThresholds } from "./Level.js"
 import { Logger, LoggerOptions } from "./Logger.js"
 import type { LogRecord } from "./LogRecord"
-import { LogContextContainer } from "./context/index.js"
+import { LogContext, LogContextContainer } from "./context/index.js"
 import { flow, get, nth } from "lodash/fp"
 
 export type CategoryMatch = RegExp | string
@@ -112,7 +112,7 @@ export class LoggingManager<Record extends LogRecord = any> {
    * @param {Appender<Record> | Appender<Record>[]} newAppenders
    * @returns {this<Record>}
    */
-  addAppenders(...newAppenders: Array<Appender<Record> | Appender<Record>[]>) {
+  addAppenders(...newAppenders: Array<Appender<Record> | Appender<Record>[]>): this {
     this.state.appenders.push(...flatten(newAppenders))
     return this
   }
@@ -122,7 +122,7 @@ export class LoggingManager<Record extends LogRecord = any> {
    *
    * @returns {this<Record>}
    */
-  clearThresholdOverrides() {
+  clearThresholdOverrides(): this {
     this.state.thresholdOverrides.length = 0
     return this
   }
@@ -144,7 +144,7 @@ export class LoggingManager<Record extends LogRecord = any> {
    * @param {string} category
    * @returns {LogContext[]}
    */
-  getApplicableCurrentContexts(category: string) {
+  getApplicableCurrentContexts(category: string): LogContext[] {
     return LogContextContainer.currentContext().filter(
       ({ pattern }) => !pattern || pattern.test(category)
     )
@@ -188,7 +188,7 @@ export class LoggingManager<Record extends LogRecord = any> {
    * @param {LevelKind} newLevel
    * @returns {this<Record>}
    */
-  setRootLevel(newLevel: LevelKind) {
+  setRootLevel(newLevel: LevelKind): this {
     this.state.rootLevel = newLevel
     return this
   }
@@ -244,7 +244,7 @@ export class LoggingManager<Record extends LogRecord = any> {
    * @param {LoggingManagerOptions<any>} options
    * @returns {this<Record>}
    */
-  configure(options: LoggingManagerOptions<any>) {
+  configure(options: LoggingManagerOptions<any>): this {
     if (Level[options?.rootLevel]) {
       this.setRootLevel(options.rootLevel)
     }
