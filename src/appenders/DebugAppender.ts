@@ -3,12 +3,10 @@ import type { Appender } from "../Appender"
 import type { LevelKind } from "../Level"
 import Debug from "debug"
 import {
-  ConsoleAppenderConfig,
-  ConsoleAppender,
-  kDefaultConsoleAppenderConfig
+  ConsoleAppender, ConsoleAppenderConfig, kDefaultConsoleAppenderConfig
 } from "./ConsoleAppender.js"
 import type { Formatter } from "../Formatter"
-import { flatten, isEmpty, negate } from "lodash"
+import { isEmpty, negate } from "lodash"
 
 
 // let chalk: any = null

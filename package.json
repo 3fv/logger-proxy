@@ -6,13 +6,14 @@
   "module": "./lib/mjs/index.js",
   "types": "./lib/mjs/index.d.ts",
   "exports": {
-    "default": {
+    ".": {
       "import": "./lib/mjs/index.js",
-      "require": "./lib/cjs/index.js"
-    },
-    "node": {
-      "import": "./lib/mjs/index-node.js",
       "require": "./lib/cjs/index-node.js"
+    },
+    "./appenders/FileAppender.js": {
+      "types": "./appenders/FileAppender.d.ts",
+      "import": "./lib/mjs/appenders/FileAppender.js",
+      "require": "./lib/cjs/appenders/FileAppender.js"
     }
   },
   "scripts": {
@@ -20,7 +21,7 @@
     "build:link": "yarn run build && yarn unlink;yarn link",
     "build:watch": "run-s build:link && yarn run build --watch",
     "test": "yarn run build && jest",
-    "test:watch": "yarn run build && jest --watch",
+    "test:watch": "yarn run build && jest --watchAll --no-cache",
     "test:dev": "run-s build && run-p test:watch build:watch",
     "preversion": "yarn build && yarn test",
     "clean": "./scripts/clean.sh",
@@ -60,7 +61,9 @@
     "debug": "^4.3.6",
     "lodash": "^4.17.21"
   },
-  "optionalDependencies": {},
+  "optionalDependencies": {
+    "electron": "^30"
+  },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
     "@types/bluebird": "^3.5.42",

@@ -24,21 +24,28 @@ console.log(`process.argv: `, rawArgv)
 console.log(`argv: `, argv)
 
 const die = (msg, exitCode = 1, err = null) => {
-    if (err) {
-        if (typeof err.printStackTrace === "function")
-            err.printStackTrace()
-        else
-            err.toString()
+  if (err) {
+    if (typeof err.printStackTrace === "function") {
+      err.printStackTrace()
+    } else {
+      err.toString()
     }
-
-    echo`ERROR: ${msg}`
-    process.exit(exitCode)
+  }
+  
+  echo`ERROR: ${msg}`
+  process.exit(exitCode)
 }
 
-const run = (...args) => $`${args}`
-    .catch(err => die(`An error occurred while executing: ${args.join(' ')}: ${err.message}`, 1, err))
-
-
+const run = (...args) => {
+  echo`Running: ${args.join(" ")}`
+  return $`${args}`.catch((err) =>
+    die(
+      `An error occurred while executing: ${args.join(" ")}: ${err.message}`,
+      1,
+      err
+    )
+  )
+}
 
 Sh.mkdir("-p", mjsDir, cjsDir)
 
@@ -52,12 +59,23 @@ const cjsJson = `{
     "module": "./index.js"
 }`
 
-Fs.outputFileSync(cjsJsonFile, cjsJson, { encoding: 'utf-8' })
-Fs.outputFileSync(mjsJsonFile, mjsJson, { encoding: 'utf-8' })
+// "exports": {
+//   ".": {
+//     "types": "./index.d.ts",
+//       "default": "./index.js"
+//   },
+//   "./appenders/FileAppender.js": {
+//     "types": "./appenders/FileAppender.d.ts",
+//       "default": "./appenders/FileAppender.js"
+//   }
+// }
+
+Fs.outputFileSync(cjsJsonFile, cjsJson, { encoding: "utf-8" })
+Fs.outputFileSync(mjsJsonFile, mjsJson, { encoding: "utf-8" })
 
 const tscArgs = ["-b", "tsconfig.json", ...rawArgv, "--preserveWatchOutput"]
 
-echo`Building with args: ${tscArgs.join(' ')}`
+// echo`Building with args: ${tscArgs.join(" ")}`
 run("tsc", ...tscArgs)
 
 echo`${libDir} successfully built`
