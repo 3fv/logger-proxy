@@ -6,7 +6,7 @@ import { $, argv, fs as Fs, path as Path, echo, usePwsh, which } from "zx"
 import Sh from "shelljs"
 
 $.verbose = true
-usePwsh()
+//usePwsh()
 
 const scriptDir = import.meta.dirname
 const rootDir = Path.resolve(scriptDir, "..")
