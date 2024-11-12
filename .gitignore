@@ -89,3 +89,4 @@ jspm_packages
 /.idea/aws.xml
 /.idea/redis-manager-config.xml
 /.idea/runConfigurations.xml
+.DS_Store
