@@ -1,6 +1,6 @@
 {
   "name": "@3fv/logger-proxy",
-  "version": "1.0.70",
+  "version": "1.0.71",
   "description": "A logger proxy to enable hot swapping backends",
   "main": "./lib/cjs/index.js",
   "module": "./lib/mjs/index.js",
