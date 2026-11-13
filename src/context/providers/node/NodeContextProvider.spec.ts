@@ -52,7 +52,7 @@ describe("NodeContextProvider", () => {
     log1.info("test1")
     log2.info("test2")
 
-    expect(baseAppender.append).toBeCalledTimes(2)
+    expect(baseAppender.append).toHaveBeenCalledTimes(2)
   })
 
   it("works with no context provider", async () => {
@@ -61,8 +61,8 @@ describe("NodeContextProvider", () => {
       log1.info("test2")
     })
 
-    expect(baseAppender.append).toBeCalledTimes(2)
-    expect(contextAppender1.append).toBeCalledTimes(0)
+    expect(baseAppender.append).toHaveBeenCalledTimes(2)
+    expect(contextAppender1.append).toHaveBeenCalledTimes(0)
   })
 
   it("works with 1 contexts", async () => {
@@ -72,8 +72,8 @@ describe("NodeContextProvider", () => {
       log1.info("test2")
     })
 
-    expect(baseAppender.append).toBeCalledTimes(2)
-    expect(contextAppender1.append).toBeCalledTimes(1)
+    expect(baseAppender.append).toHaveBeenCalledTimes(2)
+    expect(contextAppender1.append).toHaveBeenCalledTimes(1)
   })
 
   it("works with n contexts", async () => {
@@ -86,8 +86,8 @@ describe("NodeContextProvider", () => {
       })
     })
 
-    expect(baseAppender.append).toBeCalledTimes(3)
-    expect(contextAppender1.append).toBeCalledTimes(2)
-    expect(contextAppender2.append).toBeCalledTimes(1)
+    expect(baseAppender.append).toHaveBeenCalledTimes(3)
+    expect(contextAppender1.append).toHaveBeenCalledTimes(2)
+    expect(contextAppender2.append).toHaveBeenCalledTimes(1)
   })
 })

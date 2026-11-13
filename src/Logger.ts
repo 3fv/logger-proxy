@@ -1,6 +1,6 @@
 import { assert, isDefined, isFunction, isNumber } from "@3fv/guard"
 import { asOption } from "@3fv/prelude-ts"
-import { pick } from "lodash"
+import pick from "lodash/pick.js"
 import { LevelKind, LevelThresholds } from "./Level.js"
 import type { LoggingManager } from "./LoggingManager"
 import type { LogRecord } from "./LogRecord"

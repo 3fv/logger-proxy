@@ -19,7 +19,7 @@ the `java` or `std::thread_local` in `c++` ).
 ## Install
 
 ```shell
-yarn add @3fv/logger-proxy
+pnpm add @3fv/logger-proxy
 ```
 
 ## Usage
@@ -108,7 +108,7 @@ describe("NodeContextProvider", () => {
     log1.info("test1")
     log2.info("test2")
     
-    expect(baseAppender.append).toBeCalledTimes(2)
+    expect(baseAppender.append).toHaveBeenCalledTimes(2)
   })
   
   it("works with no context provider", async () => {
@@ -117,8 +117,8 @@ describe("NodeContextProvider", () => {
       log1.info("test2")
     })
     
-    expect(baseAppender.append).toBeCalledTimes(2)
-    expect(contextAppender1.append).toBeCalledTimes(0)
+    expect(baseAppender.append).toHaveBeenCalledTimes(2)
+    expect(contextAppender1.append).toHaveBeenCalledTimes(0)
   })
   
   it("works with 1 contexts", async () => {
@@ -131,8 +131,8 @@ describe("NodeContextProvider", () => {
       log1.info("test2")
     })
     
-    expect(baseAppender.append).toBeCalledTimes(2)
-    expect(contextAppender1.append).toBeCalledTimes(1)
+    expect(baseAppender.append).toHaveBeenCalledTimes(2)
+    expect(contextAppender1.append).toHaveBeenCalledTimes(1)
   })
   
   it("works with n contexts", async () => {
@@ -148,10 +148,56 @@ describe("NodeContextProvider", () => {
       })
     })
     
-    expect(baseAppender.append).toBeCalledTimes(3)
-    expect(contextAppender1.append).toBeCalledTimes(2)
-    expect(contextAppender2.append).toBeCalledTimes(1)
+    expect(baseAppender.append).toHaveBeenCalledTimes(3)
+    expect(contextAppender1.append).toHaveBeenCalledTimes(2)
+    expect(contextAppender2.append).toHaveBeenCalledTimes(1)
   })
 })
 
 ```
+
+## Commands
+
+[pnpm](https://pnpm.io) is the package manager, at the version pinned by the
+`packageManager` field of `package.json`.
+
+| Command            | What it does                                                    |
+| ------------------ | --------------------------------------------------------------- |
+| `pnpm install`     | Installs dependencies from `pnpm-lock.yaml`                     |
+| `pnpm build`       | Compiles `src/` to `lib/mjs` and `lib/cjs` (`tsc -b`)           |
+| `pnpm build:watch` | Same, in watch mode                                             |
+| `pnpm test`        | Runs jest over the compiled specs in `lib/cjs` (build first)    |
+| `pnpm test:dev`    | Builds, then runs the build and the tests in watch mode         |
+| `pnpm release`     | Starts the GitHub Actions release workflow (patch bump)         |
+
+`pnpm-workspace.yaml` denies the `electron` and `@parcel/watcher` install
+scripts: nothing here runs the Electron binary, and the watcher's native binary
+comes from its optional dependencies.
+
+The package is a hybrid: `lib/mjs` holds the ES modules and `lib/cjs` the
+CommonJS build, selected through the `exports` map of `package.json`. `lodash`
+functions are imported one file at a time (`lodash/pick.js`), which is the form
+that loads in native Node ES modules as well as in CommonJS.
+
+To use a local checkout from another project, run
+`pnpm link /path/to/logger-proxy` in that project after `pnpm build` here.
+
+## Releasing
+
+Releases run entirely in GitHub Actions (`.github/workflows/release.yml`),
+started by `pnpm release` or by
+`gh workflow run release.yml --ref master -f bump=<patch|minor|major|none>` (add
+`-f dist-tag=<tag>` to publish under a tag other than `latest`):
+
+1. The `version` job runs `pnpm version`, which builds and tests the package
+   (`preversion`), commits and tags `vX.Y.Z`, and pushes both to `master`.
+2. The `publish` job checks out that tag, builds it and runs `npm publish`
+   through npm trusted publishing, so no npm token or two-factor prompt is
+   involved. If it fails, re-run that job alone: it publishes the same tag.
+
+`bump=none` publishes the version already in `package.json` at the dispatched
+commit without bumping or tagging.
+
+Trusted publishing needs a one-time registration of the workflow on npm:
+
+    npm trust github @3fv/logger-proxy --repo 3fv/logger-proxy --file release.yml --allow-publish

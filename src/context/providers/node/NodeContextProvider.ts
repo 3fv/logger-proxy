@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "async_hooks"
-import { uniq } from "lodash"
+import uniq from "lodash/uniq.js"
 import type { LogContext } from "../../LogContext"
 import type { LogContextProvider } from "../../LogContextProvider"
 import { LogContextContainer } from "../../LogContextContainer.js"

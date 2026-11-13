@@ -1,6 +1,6 @@
 import { Deferred } from "@3fv/deferred"
 // import * as Faker from "faker"
-import { range } from "lodash"
+import range from "lodash/range.js"
 import { FileAppender } from "../appenders/FileAppender.js"
 import { getLogger } from "../getLogger.js"
 import { LevelNames } from "../Level.js"

@@ -6,7 +6,8 @@ import {
   ConsoleAppender, ConsoleAppenderConfig, kDefaultConsoleAppenderConfig
 } from "./ConsoleAppender.js"
 import type { Formatter } from "../Formatter"
-import { isEmpty, negate } from "lodash"
+import isEmpty from "lodash/isEmpty.js"
+import negate from "lodash/negate.js"
 
 
 // let chalk: any = null

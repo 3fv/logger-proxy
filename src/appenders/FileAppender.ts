@@ -1,4 +1,6 @@
-import { assign, defaults, padStart } from "lodash"
+import assign from "lodash/assign.js"
+import defaults from "lodash/defaults.js"
+import padStart from "lodash/padStart.js"
 import * as Path from "path"
 import * as Fs from "fs"
 import type { LogRecord } from "../LogRecord"

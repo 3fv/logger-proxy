@@ -47,7 +47,7 @@ describe("Logger", () => {
     levelMocks.forEach(([level, src, mock]) => {
       log[level].bind(log)("test123")
 
-      expect(mock).toBeCalledTimes(1)
+      expect(mock).toHaveBeenCalledTimes(1)
     })
   })
 })

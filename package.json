@@ -1,39 +1,58 @@
 {
   "name": "@3fv/logger-proxy",
   "version": "1.0.71",
+  "packageManager": "pnpm@12.15.0",
   "description": "A logger proxy to enable hot swapping backends",
   "main": "./lib/cjs/index.js",
   "module": "./lib/mjs/index.js",
   "types": "./lib/mjs/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/mjs/index.js",
-      "require": "./lib/cjs/index-node.js"
+      "import": {
+        "types": "./lib/mjs/index.d.ts",
+        "default": "./lib/mjs/index.js"
+      },
+      "require": {
+        "types": "./lib/cjs/index-node.d.ts",
+        "default": "./lib/cjs/index-node.js"
+      }
+    },
+    "./context/providers/node": {
+      "import": {
+        "types": "./lib/mjs/context/providers/node/index.d.ts",
+        "default": "./lib/mjs/context/providers/node/index.js"
+      },
+      "require": {
+        "types": "./lib/cjs/context/providers/node/index.d.ts",
+        "default": "./lib/cjs/context/providers/node/index.js"
+      }
     },
     "./appenders/FileAppender.js": {
-      "types": "./appenders/FileAppender.d.ts",
-      "import": "./lib/mjs/appenders/FileAppender.js",
-      "require": "./lib/cjs/appenders/FileAppender.js"
+      "import": {
+        "types": "./lib/mjs/appenders/FileAppender.d.ts",
+        "default": "./lib/mjs/appenders/FileAppender.js"
+      },
+      "require": {
+        "types": "./lib/cjs/appenders/FileAppender.d.ts",
+        "default": "./lib/cjs/appenders/FileAppender.js"
+      }
     }
   },
   "scripts": {
     "build": "node ./scripts/build.mjs",
-    "build:link": "yarn run build && yarn unlink;yarn link",
-    "build:watch": "run-s build:link && yarn run build --watch",
-    "test": "yarn run build && jest",
-    "test:watch": "yarn run build && jest --watchAll --no-cache",
+    "build:watch": "pnpm run build --watch",
+    "test": "jest",
+    "test:watch": "jest --watchAll --no-cache",
     "test:dev": "run-s build && run-p test:watch build:watch",
-    "preversion": "yarn build && yarn test",
-    "clean": "./scripts/clean.sh",
-    "postversion": "node ./scripts/release.mjs latest",
-    "release": "yarn build  && yarn version --patch --non-interactive"
+    "preversion": "pnpm build && pnpm test",
+    "release": "gh workflow run release.yml --ref master -f bump=patch"
   },
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/3fv/logger-proxy.git"
+    "url": "git+https://github.com/3fv/logger-proxy.git"
   },
   "keywords": [
     "typescript",
@@ -41,10 +60,12 @@
     "proxy"
   ],
   "files": [
-    "**/*.d.ts",
-    "**/*.js",
-    "**/*.map",
-    "package.json"
+    "lib",
+    "!lib/**/*.spec.*",
+    "!lib/**/*.tsbuildinfo",
+    "src",
+    "!src/**/*.spec.ts",
+    "README.md"
   ],
   "author": "Jonathan Glanz",
   "license": "MIT",
@@ -53,28 +74,26 @@
   },
   "homepage": "https://github.com/3fv/logger-proxy#readme",
   "dependencies": {
-    "@3fv/deferred": "^1.2.10",
-    "@3fv/guard": "^1",
-    "@3fv/prelude-ts": "^0.8.29",
+    "@3fv/deferred": "^1.2.17",
+    "@3fv/guard": "^1.4.41",
+    "@3fv/prelude-ts": "^0.8.45",
     "bluebird": "^3.7.2",
     "chalk": "^5.3.0",
     "debug": "^4.3.6",
     "lodash": "^4.17.21"
-  },
-  "optionalDependencies": {
-    "electron": "^30"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
     "@types/bluebird": "^3.5.42",
     "@types/chalk": "^2.2.0",
     "@types/debug": "^4.1.12",
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.7",
     "@types/node": "^22.4.0",
     "@types/shelljs": "^0.8.15",
     "cross-env": "^7.0.3",
-    "jest": "^29.7.0",
+    "electron": "^30",
+    "jest": "^30.5.2",
     "lodash": "^4.17.21",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.3.3",
@@ -82,14 +101,9 @@
     "shelljs": "^0.8.5",
     "source-map-support": "^0.5.21",
     "supports-color": "^9.4.0",
-    "ts-jest": "^29.2.4",
+    "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4",
+    "typescript": "^6.0.3",
     "zx": "^8.1.4"
-  },
-  "resolutions": {
-    "chalk": "^4.1.2",
-    "ansi-regex": "^5.0.1",
-    "tmpl": "^1.0.5"
   }
 }

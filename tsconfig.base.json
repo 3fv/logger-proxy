@@ -6,7 +6,11 @@
 			"esnext"
 		],
 		"module": "ESNext",
-		"moduleResolution": "node",
+		"moduleResolution": "bundler",
+		"strict": false,
+		"types": ["node", "jest"],
+		"strict": false,
+		"types": ["node", "jest"],
 		"moduleDetection": "auto",
 		"declaration": true,
 		"esModuleInterop": true,

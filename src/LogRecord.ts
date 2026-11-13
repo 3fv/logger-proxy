@@ -1,4 +1,5 @@
-import { fromPairs, uniq } from "lodash"
+import fromPairs from "lodash/fromPairs.js"
+import uniq from "lodash/uniq.js"
 import type { Level, LevelKind, LevelName } from "./Level"
 
 export interface LogRecord<Data = any> {
