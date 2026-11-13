@@ -97,6 +97,18 @@ export class LoggingManager<Record extends LogRecord = any> {
   }
   
   /**
+   * Flush every appender which buffers records (`Appender.flush`),
+   * await it before the process exits so the last records are written
+   *
+   * @returns a promise resolved once every appender has flushed
+   */
+  async flush(): Promise<void> {
+    await Promise.all(
+      this.state.appenders.map((appender) => appender.flush?.())
+    )
+  }
+
+  /**
    * Set global appenders
    *
    * @param {Array<Appender<Record>>} newAppenders

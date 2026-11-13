@@ -5,7 +5,7 @@ import * as Path from "path"
 import * as Fs from "fs"
 import type { LogRecord } from "../LogRecord"
 import type { Appender } from "../Appender"
-import { asOption, Future } from "@3fv/prelude-ts"
+import { asOption } from "@3fv/prelude-ts"
 import { Buffer } from "buffer"
 import Debug from "debug"
 import Bluebird from "bluebird"
@@ -14,9 +14,19 @@ const FsAsync = Fs.promises
 
 const debug = Debug("3fv:logger:FileAppender")
 const osTempDir = process.env.TMP ?? process.env.TEMP ?? "/tmp"
-const tempDir = Fs.mkdtempSync(Path.join(osTempDir, "logger-proxy-example")) //
-const getDefaultConfig = (): FileAppenderConfig => ({
-  filename: Path.join(tempDir, "app.log"),
+
+/**
+ * The file used when no `filename` is configured, in a new
+ * temp directory; only created when an appender needs it,
+ * never when the module is merely imported
+ */
+const createDefaultFilename = () =>
+  Path.join(
+    Fs.mkdtempSync(Path.join(osTempDir, "logger-proxy-example")),
+    "app.log"
+  )
+
+const getDefaultConfig = (): Omit<FileAppenderConfig, "filename"> => ({
   prettyPrint: process.env.NODE_ENV !== "production",
   maxSize: -1,
   maxFiles: 5,
@@ -25,7 +35,10 @@ const getDefaultConfig = (): FileAppenderConfig => ({
 })
 
 function applyConfigDefaults(options: FileAppenderOptions): FileAppenderConfig {
-  return defaults(options, getDefaultConfig())
+  return defaults(
+    { ...options, filename: options.filename ?? createDefaultFilename() },
+    getDefaultConfig()
+  )
 }
 
 export interface FileAppenderConfig<Record extends LogRecord = any> {
@@ -173,14 +186,19 @@ export class FileAppender<Record extends LogRecord>
   }
 
   /**
-   * Close the handler
+   * Write every queued record, then close the file;
+   * records appended after `close()` are not written
    *
    * @returns {Promise<void>}
    */
-  close() {
-    return this.flush().onComplete(() =>
-      asOption(this.state.file).map(Fs.closeSync)
-    ).toPromise()
+  async close(): Promise<void> {
+    await this.flush()
+    const { state } = this
+    asOption(state.file).map(Fs.closeSync)
+    assign(state, {
+      file: undefined,
+      ready: false
+    })
   }
 
   get queue() {
@@ -200,42 +218,60 @@ export class FileAppender<Record extends LogRecord>
   }
 
   /**
+   * The flush in progress, if any; flushes are serialized,
+   * a single one drains the queue at any time
+   */
+  private flushPromise: Promise<void> = undefined
+
+  /**
+   * Write every queued record to the file, in the order appended
+   *
+   * @returns a promise resolved once the queue is empty, records
+   *   appended while flushing are written before it resolves
+   */
+  flush(): Promise<void> {
+    if (!this.flushPromise) {
+      this.flushPromise = this.drainQueue().finally(() => {
+        this.flushPromise = undefined
+        if (this.queue.length) {
+          this.flush()
+        }
+      })
+    }
+    return this.flushPromise
+  }
+
+  /**
    * Appends the log queue records to the file
    */
-  private flush() {
+  private async drainQueue(): Promise<void> {
     const { state } = this
-    return Future.do(async () => {
-      state.flushing = true
-      try {
+    state.flushing = true
+    try {
+      while (this.queue.length) {
+        // READ `file` EACH TIME, ROLLING REPLACES IT
         const { file } = this
         if (!file) {
           throw Error(`${this.filename} was not opened properly`)
         }
-        while (this.queue.length) {
-          const buf: Buffer = this.queue.shift()
+        const buf: Buffer = this.queue.shift()
 
-          await Bluebird.fromCallback((cb) =>
-            Fs.appendFile(file, buf, "utf-8", cb)
-          )
+        await Bluebird.fromCallback((cb) =>
+          Fs.appendFile(file, buf, "utf-8", cb)
+        )
 
-          state.currentSize += buf.byteLength
-        }
+        state.currentSize += buf.byteLength
 
         const { maxSize } = this.config
         if (maxSize > 0 && state.currentSize >= maxSize) {
           this.rollFile()
         }
-
-        //await Bluebird.fromCallback((cb) => Fs.fdatasync(this.file, cb))
-      } catch (err) {
-        console.error(`Failed to append file ${this.filename}`, err)
-      } finally {
-        this.state.flushing = false
-        if (this.queue.length) {
-          queueMicrotask(() => this.flush())
-        }
       }
-    })
+    } catch (err) {
+      console.error(`Failed to append file ${this.filename}`, err)
+    } finally {
+      state.flushing = false
+    }
   }
 
   /**

@@ -50,6 +50,39 @@ LevelNames.forEach((name) =>
 
 ```
 
+### Writing to a file & flushing
+
+`FileAppender` writes one JSON record per line (`prettyPrint: false`) or
+indented JSON, and can roll the file by size. It writes asynchronously, in the
+order records were appended, so flush before the process exits to keep the last
+records:
+
+```typescript
+import { getLogger, getLoggingManager } from "@3fv/logger-proxy"
+import { FileAppender } from "@3fv/logger-proxy/appenders/FileAppender.js"
+
+const manager = getLoggingManager()
+manager.setAppenders(
+  new FileAppender({
+    filename: "/var/log/my-app/app.log",
+    prettyPrint: false,
+    enableRolling: true,
+    maxSize: 10 * 1024 * 1024,
+    maxFiles: 5
+  })
+)
+
+getLogger(__filename).info("shutting down")
+
+// Resolves once every appender that buffers records has written them
+await manager.flush()
+```
+
+`manager.flush()` calls the optional `flush()` of each appender; a custom
+appender that writes asynchronously implements it. `fileAppender.close()`
+flushes and then closes the file. Without a `filename` the appender logs to a
+new temp directory, which is only created when such an appender is constructed.
+
 ### Context Stacks (the coolest bit)
 
 For verboseness as well as the fact I'm lazy, here's a complete unit test illustrating the capabilities (in `jest`)
